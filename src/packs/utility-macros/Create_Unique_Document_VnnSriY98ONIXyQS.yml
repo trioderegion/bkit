@@ -1,0 +1,340 @@
+name: Create Unique Document
+type: script
+author: UkXd4NXnT5o2bQiL
+img: icons/magic/life/cross-worn-green.webp
+scope: global
+command: |-
+  /**
+   * Generate a standardized document ID given a provided string title.
+   * @param {string} title      An input string title
+   * @param {object} options    Additional options for ID generation
+   * @param {string} [options.prefix]   A prefix to append before each ID
+   * @param {number} [options.length]   The maximum ID length
+   * @returns {string}          A standardized camel-case ID
+   */
+  function generateId(title, {prefix="phb", length=16}={}) {
+    const words = [prefix, ...title.split(" ")];
+    const id = words.map((w, i) => {
+      
+      return w;
+    }).join("");
+    return Number.isNumeric(length) ? id.slice(0, length).padEnd(length, "0") : id;
+  }
+
+  function getFormData( html ) {
+    const formElement = html[0].querySelector('form');
+    const formData = new FormDataExtended(formElement);
+    return formData.object;
+  }
+
+  async function createActor( name, type ) {
+    if ( game.actors.get(generateId(name)) ) return ui.notifications.warn("A document already exists with that ID!");
+    await Actor.create({
+      _id: generateId(name),
+      name: name,
+      type: type
+    }, {keepId: true});
+  }
+
+  async function createScene( name ) {
+    if ( game.scenes.get(generateId(name)) ) return ui.notifications.warn("A document already exists with that ID!");
+    await Scene.create({
+      _id: generateId(name),
+      name: name,
+    }, {keepId: true});
+  }
+
+  async function createItem( name, type ) {
+    if ( game.items.get(generateId(name)) ) return ui.notifications.warn("A document already exists with that ID!");
+    await Item.create({
+      _id: generateId(name),
+      name: name,
+      type: type
+    }, {keepId: true});
+  }
+
+  async function createJournal( name ) {
+    if ( game.journal.get(generateId(name)) ) return ui.notifications.warn("A document already exists with that ID!");
+    await JournalEntry.create({
+      _id: generateId(name),
+      name: name,
+    }, {keepId: true});
+  }
+
+  async function createRolltable( name ) {
+    if ( game.tables.get(generateId(name)) ) return ui.notifications.warn("A document already exists with that ID!");
+    await RollTable.create({
+      _id: generateId(name),
+      name: name,
+    }, {keepId: true});
+  }
+
+  function actorDialog() {
+    new Dialog({
+      title: "Create an Actor",
+      content: `
+                Choose the name and type of Actor to create:
+                <form>
+                    <label for="name">Character Name</label>
+                    <input id="name" name="name" type="text">
+                </form>
+              `,
+      buttons: {
+        character: {
+          label: "Character",
+          callback: async ( html ) => {
+            const formData = getFormData(html);
+            console.log(formData);
+            await createActor( formData["name"], 'character' );
+          }
+        },
+        npc: {
+          label: "NPC",
+          callback: async ( html ) => {
+            const formData = getFormData(html);
+            await createActor( formData["name"], 'npc' );
+          }
+        },
+        vehicle: {
+          label: "Vehicle",
+          callback: async ( html ) => {
+            const formData = getFormData(html);
+            await createActor( formData["name"], 'vehicle' );
+          }
+        },
+        group: {
+          label: "Group",
+          callback: async ( html ) => {
+            const formData = getFormData(html);
+            await createActor( formData["name"], 'group' );
+          }
+        }
+      },
+        default: 'actor',
+    }).render(true)
+  }
+
+  function sceneDialog() {
+    new Dialog({
+      title: "Create a Scene",
+      content: `
+                Choose the name of the Scene to create:
+                <form>
+                    <label for="name">Scene Name</label>
+                    <input id="name" name="name" type="text">
+                </form>
+              `,
+      buttons: {
+        createScene: {
+          label: "Create Scene",
+          callback: async ( html ) => {
+            const formData = getFormData(html);
+            console.log(formData);
+            await createScene( formData["name"] );
+          }
+        }
+      },
+        default: 'createScene',
+    }).render(true)
+  }
+
+  function itemDialog() {
+    new Dialog({
+      title: "Create an Item",
+      content: `
+                Choose the name and type of Item to create:
+                <form>
+                    <label for="name">Item Name</label>
+                    <input id="name" name="name" type="text">
+                </form>
+              `,
+      buttons: {
+        weapon: {
+          label: "Weapon",
+          callback: async ( html ) => {
+            const formData = getFormData(html);
+            console.log(formData);
+            await createItem( formData["name"], 'weapon' );
+          }
+        },
+        equipment: {
+          label: "Equipment",
+          callback: async ( html ) => {
+            const formData = getFormData(html);
+            await createItem( formData["name"], 'equipment' );
+          }
+        },
+        consumable: {
+          label: "Consumable",
+          callback: async ( html ) => {
+            const formData = getFormData(html);
+            await createItem( formData["name"], 'consumable' );
+          }
+        },
+        tool: {
+          label: "Tool",
+          callback: async ( html ) => {
+            const formData = getFormData(html);
+            await createItem( formData["name"], 'tool' );
+          }
+        },
+        loot: {
+          label: "Loot",
+          callback: async ( html ) => {
+            const formData = getFormData(html);
+            await createItem( formData["name"], 'loot' );
+          }
+        },
+        race: {
+          label: "Race",
+          callback: async ( html ) => {
+            const formData = getFormData(html);
+            await createItem( formData["name"], 'race' );
+          }
+        },
+        background: {
+          label: "Background",
+          callback: async ( html ) => {
+            const formData = getFormData(html);
+            await createItem( formData["name"], 'background' );
+          }
+        },
+        class: {
+          label: "Class",
+          callback: async ( html ) => {
+            const formData = getFormData(html);
+            await createItem( formData["name"], 'class' );
+          }
+        },
+        subclass: {
+          label: "subclass",
+          callback: async ( html ) => {
+            const formData = getFormData(html);
+            await createItem( formData["name"], 'subclass' );
+          }
+        },
+        spell: {
+          label: "Spell",
+          callback: async ( html ) => {
+            const formData = getFormData(html);
+            await createItem( formData["name"], 'spell' );
+          }
+        },
+        feat: {
+          label: "Feature",
+          callback: async ( html ) => {
+            const formData = getFormData(html);
+            await createItem( formData["name"], 'feat' );
+          }
+        },
+        backpack: {
+          label: "Backpack",
+          callback: async ( html ) => {
+            const formData = getFormData(html);
+            await createItem( formData["name"], 'backpack' );
+          }
+        }
+      },
+        default: 'weapon',
+    }).render(true)
+  }
+
+  function journalDialog() {
+    new Dialog({
+      title: "Create a Journal Entry",
+      content: `
+                Choose the name of the Journal Entry to create:
+                <form>
+                    <label for="name">Journal Entry Name</label>
+                    <input id="name" name="name" type="text">
+                </form>
+              `,
+      buttons: {
+        createJournal: {
+          label: "Create Journal Entry",
+          callback: async ( html ) => {
+            const formData = getFormData(html);
+            console.log(formData);
+            await createJournal( formData["name"] );
+          }
+        }
+      },
+        default: 'createJournal',
+    }).render(true)
+  }
+
+  function rollTableDialog() {
+    new Dialog({
+      title: "Create a Roll Table",
+      content: `
+                Choose the name of the Roll Table to create:
+                <form>
+                    <label for="name">Roll Table Name</label>
+                    <input id="name" name="name" type="text">
+                </form>
+              `,
+      buttons: {
+        createRollTable: {
+          label: "Create Roll Table",
+          callback: async ( html ) => {
+            const formData = getFormData(html);
+            console.log(formData);
+            await createRolltable( formData["name"] );
+          }
+        }
+      },
+        default: 'createRollTable',
+    }).render(true)
+  }
+
+
+  new Dialog({
+    title: "What type of Document?",
+    content: "Choose the type of Document to create:",
+    buttons: {
+      actor: {
+        label: "Actor",
+        callback: actorDialog
+      },
+      scene: {
+        label: "Scene",
+        callback: sceneDialog
+      },
+      item: {
+        label: "Item",
+        callback: itemDialog
+      },
+      journal: {
+        label: "Journal",
+        callback: journalDialog
+      },
+      rolltable: {
+        label: "Roll Table",
+        callback: rollTableDialog
+      }
+    },
+      default: 'actor',
+  }).render(true)
+folder: null
+ownership:
+  default: 0
+  UkXd4NXnT5o2bQiL: 3
+flags:
+  exportSource:
+    world: dnd-phandelver-below-dev
+    system: dnd5e
+    coreVersion: '12.327'
+    systemVersion: 3.2.1
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  coreVersion: '12.331'
+  systemId: dnd5e
+  systemVersion: 4.0.4
+  createdTime: 1728322031923
+  modifiedTime: 1728322061077
+  lastModifiedBy: UkXd4NXnT5o2bQiL
+_id: VnnSriY98ONIXyQS
+sort: 1200000
+_key: '!macros!VnnSriY98ONIXyQS'
+

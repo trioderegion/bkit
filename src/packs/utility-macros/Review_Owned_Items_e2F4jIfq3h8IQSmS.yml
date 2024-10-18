@@ -1,0 +1,588 @@
+name: Review Owned Items
+type: script
+author: UkXd4NXnT5o2bQiL
+img: systems/dnd5e/icons/svg/trait.svg
+scope: global
+command: |-
+  const packId = 'dnd-players-handbook.actors';
+
+  const pack = game.packs.get(packId);
+  const index = await pack.getIndex();
+  const actions = new Map();
+
+  for (const docData of index) {
+    const doc = await pack.getDocument(docData._id);
+
+    for (const item of doc.items) {
+      if (this.getFlag('dnd-players-handbook', item.uuid)) continue;
+      doc.sheet.render(true, {left: 0, top: 0});
+      item.sheet.render(true, {left: 1600, top: 0})
+      item.system.activities?.contents.forEach( (act, idx) => {
+        act.sheet.render({force: true, position: {left: 1000, top: 200 + idx * 60}})
+      });
+
+      const reviewed = await foundry.applications.api.DialogV2.confirm({
+        content: `Complete review of ${item.name}?`, position: {top:0}});
+      
+      item.sheet.close();
+      item.system.activities?.contents.forEach( (act, idx) => {
+        act.sheet.close();
+      });
+
+      if (!reviewed) return;
+        
+      await this.setFlag('dnd-players-handbook', item.uuid, true); 
+    }
+
+    doc.sheet.close();
+  }
+
+  ui.notifications.info('Review Complete!')
+folder: null
+ownership:
+  default: 0
+  UkXd4NXnT5o2bQiL: 3
+flags:
+  dnd-players-handbook:
+    Compendium:
+      dnd-players-handbook:
+        actors:
+          Actor:
+            phbBeastoftheLan:
+              Item:
+                phbaoiPrimalBond: true
+                phbaoiBeastsStri: true
+            phbBeastoftheSea:
+              Item:
+                phbaoiAmphibious: true
+                phbaoiPrimalBond: true
+                phbaoiBeastsStri: true
+            phbBeastoftheSky:
+              Item:
+                phbaoiFlyby00000: true
+                phbaoiPrimalBond: true
+                phbaoiBeastsStri: true
+            phbSpectralAnima:
+              Item:
+                phbcftPackDamage: true
+            phbabsBeholderki:
+              Item:
+                phbaoiMultiattac: true
+                phbaoiEyeRayBeho: true
+            phbabsMindFlayer:
+              Item:
+                phbaoiWhispering: true
+                phbaoiMultiattac: true
+                phbaoiPsychicSla: true
+            phbabsSlaadSpiri:
+              Item:
+                phbaoiRegenerati: true
+                phbaoiMultiattac: true
+                phbaoiClawSlaadO: true
+            phbbesBestialAir:
+              Item:
+                phbaoiFlybyAirOn: true
+                phbaoiMultiattac: true
+                phbaoiRend000000: true
+            phbbesBestialLan:
+              Item:
+                phbaoiPackTactic: true
+                phbaoiMultiattac: true
+                phbaoiRend000000: true
+            phbbesBestialWat:
+              Item:
+                phbaoiPackTactic: true
+                phbaoiWaterBreat: true
+                phbaoiMultiattac: true
+                phbaoiRend000000: true
+            phbcesAngelSpiri:
+              Item:
+                phbaoiMultiattac: true
+                phbaoiRadiantBow: true
+                phbaoiHealingTou: true
+            phbcesDefenderSp:
+              Item:
+                phbaoiMultiattac: true
+                phbaoiRadiantMac: true
+                phbaoiHealingTou: true
+            phbcosClayConstr:
+              Item:
+                phbaoiMultiattac: true
+                phbaoiSlam000000: true
+                phbaoiBerserkLas: true
+            phbcosMetalConst:
+              Item:
+                phbaoiHeatedBody: true
+                phbaoiMultiattac: true
+                phbaoiSlam000000: true
+            phbcosStoneConst:
+              Item:
+                phbaoiStonyLetha: true
+                phbaoiMultiattac: true
+                phbaoiSlam000000: true
+            phbelsAirElement:
+              Item:
+                phbaoiAmorphousF: true
+                phbaoiMultiattac: true
+                phbaoiSlam000000: true
+            phbelsEarthEleme:
+              Item:
+                phbaoiMultiattac: true
+                phbaoiSlam000000: true
+            phbelsFireElemen:
+              Item:
+                phbaoiAmorphousF: true
+                phbaoiMultiattac: true
+                phbaoiSlam000000: true
+            phbelsFumingFeyS:
+              Item:
+                phbaoiMultiattac: true
+                phbaoiFeyBlade00: true
+                phbaoiFeyStep000: true
+            phbelsMirthfulFe:
+              Item:
+                phbaoiMultiattac: true
+                phbaoiFeyBlade00: true
+                phbaoiFeyStep000: true
+                phbaoiMirthful00: true
+            phbelsTricksyFey:
+              Item:
+                phbaoiMultiattac: true
+                phbaoiFeyBlade00: true
+                phbaoiFeyStep000: true
+                phbaoiTricksy000: true
+            phbelsWaterEleme:
+              Item:
+                phbaoiAmorphousF: true
+                phbaoiMultiattac: true
+                phbaoiSlam000000: true
+            phbfisDemonSpiri:
+              Item:
+                phbaoiDeathThroe: true
+                phbaoiMagicResis: true
+                phbaoiMultiattac: true
+                phbaoiBiteDemonO: true
+            phbfisDevilSpiri:
+              Item:
+                phbaoiDevilsSigh: true
+                phbaoiMagicResis: true
+                phbaoiMultiattac: true
+                phbaoiFieryStrik: true
+            phbfisYugolothSp:
+              Item:
+                phbaoiMagicResis: true
+                phbaoiMultiattac: true
+                phbaoiClawsYugol: true
+            phbginGiantCenti:
+              Item:
+                phbaoiSpiderClim: true
+                phbaoiMultiattac: true
+                phbaoiPoisonJab0: true
+                phbaoiWebBoltSpi: true
+                phbaoiVenomousSp: true
+            phbginGiantSpide:
+              Item:
+                phbaoiSpiderClim: true
+                phbaoiMultiattac: true
+                phbaoiPoisonJab0: true
+                phbaoiWebBoltSpi: true
+                phbaoiVenomousSp: true
+            phbginGiantWasp0:
+              Item:
+                phbaoiSpiderClim: true
+                phbaoiMultiattac: true
+                phbaoiPoisonJab0: true
+            phbhaoAnimatedOb:
+              Item:
+                phbaoiSlam000000: true
+            phblaoAnimatedOb:
+              Item:
+                phbaoiSlam000000: true
+            phbmaoAnimatedOb:
+              Item:
+                phbaoiSlam000000: true
+            phbmobAberrantSp:
+              Item:
+                phbaoiRegenerati: true
+                phbaoiWhispering: true
+                phbaoiMultiattac: true
+                phbaoiClawSlaadO: true
+                phbaoiEyeRayBeho: true
+                phbaoiPsychicSla: true
+            phbmobApe0000000:
+              Item:
+                phbaoiMultiattac: true
+                phbaoiFist000000: true
+                phbaoiRockRechar: true
+            phbmobBadger0000:
+              Item:
+                phbaoiBite000000: true
+            phbmobBat0000000:
+              Item:
+                phbaoiBite000000: true
+            phbmobBestialSpi:
+              Item:
+                phbaoiFlybyAirOn: true
+                phbaoiPackTactic: true
+                phbaoiWaterBreat: true
+                phbaoiMultiattac: true
+                phbaoiRend000000: true
+            phbmobBlackBear0:
+              Item:
+                phbaoiMultiattac: true
+                phbaoiRend000000: true
+            phbmobBoar000000:
+              Item:
+                phbaoiBloodiedFu: true
+                phbaoiGore000000: true
+            phbmobBrownBear0:
+              Item:
+                phbaoiMultiattac: true
+                phbaoiBite000000: true
+                phbaoiClaw000000: true
+            phbmobCamel00000:
+              Item:
+                phbaoiBite000000: true
+            phbmobCat0000000:
+              Item:
+                phbaoiJumper0000: true
+                phbaoiScratch000: true
+            phbmobCelestialS:
+              Item:
+                phbaoiMultiattac: true
+                phbaoiRadiantBow: true
+                phbaoiRadiantMac: true
+                phbaoiHealingTou: true
+            phbmobConstricto:
+              Item:
+                phbaoiBite000000: true
+                phbaoiConstrict0: true
+            phbmobConstructS:
+              Item:
+                phbaoiStonyLetha: true
+                phbaoiHeatedBody: true
+                phbaoiMultiattac: true
+                phbaoiSlam000000: true
+                phbaoiBerserkLas: true
+            phbmobCrab000000:
+              Item:
+                phbaoiAmphibious: true
+                phbaoiClaw000000: true
+            phbmobCrocodile0:
+              Item:
+                phbaoiHoldBreath: true
+                phbaoiBite000000: true
+            phbmobDireWolf00:
+              Item:
+                phbaoiPackTactic: true
+                phbaoiBite000000: true
+            phbmobDraconicSp:
+              Item:
+                phbaoiSharedResi: true
+                phbaoiMultiattac: true
+                phbaoiRend000000: true
+                phbaoiBreathWeap: true
+            phbmobDraftHorse:
+              Item:
+                phbaoiHooves0000: true
+            phbmobElementalS:
+              Item:
+                phbaoiAmorphousF: true
+                phbaoiMultiattac: true
+                phbaoiSlam000000: true
+            phbmobElephant00:
+              Item:
+                phbaoiMultiattac: true
+                phbaoiGore000000: true
+                phbaoiTrample000: true
+            phbmobElk0000000:
+              Item:
+                phbaoiRam0000000: true
+            phbmobFaithfulHo:
+              Item:
+                phbaoiBite000000: true
+            phbmobFeySpirit0:
+              Item:
+                phbaoiMultiattac: true
+                phbaoiFeyBlade00: true
+                phbaoiFeyStep000: true
+                phbaoiMirthful00: true
+                phbaoiTricksy000: true
+            phbmobFiendishSp:
+              Item:
+                phbaoiDeathThroe: true
+                phbaoiDevilsSigh: true
+                phbaoiMagicResis: true
+                phbaoiMultiattac: true
+                phbaoiBiteDemonO: true
+                phbaoiClawsYugol: true
+                phbaoiFieryStrik: true
+            phbmobFrog000000:
+              Item:
+                phbaoiAmphibious: true
+                phbaoiStandingLe: true
+                phbaoiBite000000: true
+            phbmobGiantBadge:
+              Item:
+                phbaoiBite000000: true
+            phbmobGiantCrab0:
+              Item:
+                phbaoiAmphibious: true
+                phbaoiClaw000000: true
+            phbmobGiantGoat0:
+              Item:
+                phbaoiRam0000000: true
+            phbmobGiantInsec:
+              Item:
+                phbaoiSpiderClim: true
+                phbaoiMultiattac: true
+                phbaoiPoisonJab0: true
+                phbaoiWebBoltSpi: true
+                phbaoiVenomousSp: true
+            phbmobGiantSeaho:
+              Item:
+                phbaoiWaterBreat: true
+                phbaoiRam0000000: true
+                phbaoiBubbleDash: true
+            phbmobGiantSpide:
+              Item:
+                phbaoiSpiderClim: true
+                phbaoiWebWalker0: true
+                phbaoiBite000000: true
+                phbaoiWebRecharg: true
+            phbmobGiantWease:
+              Item:
+                phbaoiBite000000: true
+            phbmobGoat000000:
+              Item:
+                phbaoiRam0000000: true
+            phbmobHawk000000:
+              Item:
+                phbaoiTalons0000: true
+            phbmobImp0000000:
+              Item:
+                phbaoiDevilsSigh: true
+                phbaoiMagicResis: true
+                phbaoiSting00000: true
+                phbaoiInvisibili: true
+                phbaoiShapeShift: true
+                oHafKbzbqYGiL4i1: true
+            phbmobLion000000:
+              Item:
+                phbaoiPackTactic: true
+                phbaoiRunningLea: true
+                phbaoiMultiattac: true
+                phbaoiRend000000: true
+                phbaoiRoar000000: true
+            phbmobLizard0000:
+              Item:
+                phbaoiSpiderClim: true
+                phbaoiBite000000: true
+            phbmobMastiff000:
+              Item:
+                phbaoiBite000000: true
+            phbmobMule000000:
+              Item:
+                phbaoiBeastofBur: true
+                phbaoiHooves0000: true
+            phbmobOctopus000:
+              Item:
+                phbaoiCompressio: true
+                phbaoiWaterBreat: true
+                phbaoiInkCloud1D: true
+                phbaoiTentacles0: true
+            phbmobOtherworld:
+              Item:
+                phbaoiLifeBond00: true
+                phbaoiOtherworld: true
+                phbaoiFellGlareF: true
+                phbaoiFeyStepFey: true
+                phbaoiHealingTou: true
+            phbmobOwl0000000:
+              Item:
+                phbaoiFlyby00000: true
+                phbaoiTalons0000: true
+            phbmobPanther000:
+              Item:
+                phbaoiMultiattac: true
+                phbaoiPounce0000: true
+                phbaoiProwl00000: true
+            phbmobPony000000:
+              Item:
+                phbaoiHooves0000: true
+            phbmobPseudodrag:
+              Item:
+                phbaoiMagicResis: true
+                phbaoiMultiattac: true
+                phbaoiBite000000: true
+                phbaoiSting00000: true
+            phbmobQuasit0000:
+              Item:
+                phbaoiMagicResis: true
+                phbaoiRend000000: true
+                phbaoiInvisibili: true
+                phbaoiScare1Day0: true
+                phbaoiShapeShift: true
+                7wNdT95XqhyGOpBd: true
+            phbmobRat0000000:
+              Item:
+                phbaoiAgile00000: true
+                phbaoiBite000000: true
+            phbmobRaven00000:
+              Item:
+                phbaoiMimicry000: true
+                phbaoiBeak000000: true
+            phbmobReefShark0:
+              Item:
+                phbaoiPackTactic: true
+                phbaoiWaterBreat: true
+                phbaoiBite000000: true
+            phbmobRidingHors:
+              Item:
+                phbaoiHooves0000: true
+            phbmobScorpion00:
+              Item:
+                phbaoiSting00000: true
+            phbmobSkeleton00:
+              Item:
+                phbaoiShortsword: true
+                phbaoiShortbow00: true
+            phbmobSlaadTadpo:
+              Item:
+                phbaoiMagicResis: true
+                phbaoiBite000000: true
+            phbmobSphinxofWo:
+              Item:
+                phbaoiMagicResis: true
+                phbaoiRend000000: true
+                phbaoiBurstofIng: true
+            phbmobSpider0000:
+              Item:
+                phbaoiSpiderClim: true
+                phbaoiWebWalker0: true
+                phbaoiBite000000: true
+            phbmobSprite0000:
+              Item:
+                phbaoiNeedleSwor: true
+                phbaoiEnchanting: true
+                phbaoiHeartSight: true
+                phbaoiInvisibili: true
+                lO6diOZO5FReftK6: true
+            phbmobTiger00000:
+              Item:
+                phbaoiMultiattac: true
+                phbaoiPounce0000: true
+                phbaoiProwl00000: true
+            phbmobUndeadSpir:
+              Item:
+                phbaoiFesteringA: true
+                phbaoiIncorporea: true
+                phbaoiMultiattac: true
+                phbaoiDeathlyTou: true
+                phbaoiGraveBoltS: true
+                phbaoiRottingCla: true
+            phbmobVenomousSn:
+              Item:
+                phbaoiBite000000: true
+            phbmobWarhorse00:
+              Item:
+                phbaoiHooves0000: true
+            phbmobWeasel0000:
+              Item:
+                phbaoiBite000000: true
+            phbmobWolf000000:
+              Item:
+                phbaoiPackTactic: true
+                phbaoiBite000000: true
+            phbmobZombie0000:
+              Item:
+                phbaoiUndeadFort: true
+                phbaoiSlam000000: true
+            phbostCelestial0:
+              Item:
+                phbaoiLifeBond00: true
+                phbaoiOtherworld: true
+                phbaoiHealingTou: true
+            phbostFey0000000:
+              Item:
+                phbaoiLifeBond00: true
+                phbaoiOtherworld: true
+                phbaoiFeyStepFey: true
+            phbostFiend00000:
+              Item:
+                phbaoiLifeBond00: true
+                phbaoiOtherworld: true
+                phbaoiFellGlareF: true
+            phbsaoAnimatedOb:
+              Item:
+                phbaoiSlam000000: true
+            phbsplArcaneEye0:
+              Item:
+                phbaoiWizard0000: true
+            phbsplBigbysHand:
+              Item:
+                phbaoiClenchedFi: true
+                phbaoiForcefulHa: true
+                phbaoiGraspingHa: true
+                phbaoiInterposin: true
+            phbsplConjuredEl:
+              Item:
+                1sm4KQqflaDX7MEu: true
+                oJkALZTVLPy8TJSR: true
+                M6i0fFdNQmWKA4BZ: true
+                BeXR1DiQaXVIpgxp: true
+            phbsplConjuredFe:
+              Item:
+                phbaoiAttackAtta: true
+            phbsplFlamingSph:
+              Item:
+                phbftFlamingSphe: true
+                phbaoiFlamingSph: true
+            phbsplFloatingDi:
+              Item:
+                KTWQy1Nv101ubAeN: true
+            phbsplGraspingVi:
+              Item:
+                phbaoiLevel4Conj: true
+            phbsplGuardianof:
+              Item:
+                phbaoiLevel4Conj: true
+            phbsplMordSword0:
+              Item:
+                phbftMordenkaine: true
+            phbsplSpiritualW:
+              Item:
+                phbaoiAttackSpir: true
+            phbsumPhantomSte:
+              Item:
+                phbaoiHooves0000: true
+            phbtaoAnimatedOb:
+              Item:
+                phbaoiSlam000000: true
+            phbudsGhostlySpi:
+              Item:
+                phbaoiIncorporea: true
+                phbaoiMultiattac: true
+                phbaoiDeathlyTou: true
+            phbudsPutridSpir:
+              Item:
+                phbaoiFesteringA: true
+                phbaoiMultiattac: true
+                phbaoiRottingCla: true
+            phbudsSkeletalSp:
+              Item:
+                phbaoiMultiattac: true
+                phbaoiGraveBoltS: true
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  coreVersion: '12.331'
+  systemId: dnd5e
+  systemVersion: 4.0.4
+  createdTime: 1728322061063
+  modifiedTime: 1728322061077
+  lastModifiedBy: UkXd4NXnT5o2bQiL
+_id: e2F4jIfq3h8IQSmS
+sort: 200000
+_key: '!macros!e2F4jIfq3h8IQSmS'
+

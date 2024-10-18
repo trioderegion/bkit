@@ -1,0 +1,29 @@
+name: Select Everywhere
+type: script
+author: UkXd4NXnT5o2bQiL
+img: icons/svg/dice-target.svg
+scope: global
+command: |-
+  const creatingStyle = document.createElement("style");
+  document.head.appendChild(creatingStyle);
+  creatingStyle.sheet.insertRule(`.message * {
+    user-select: text !important;
+  }`);
+folder: null
+ownership:
+  default: 0
+  UkXd4NXnT5o2bQiL: 3
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  coreVersion: '12.331'
+  systemId: dnd5e
+  systemVersion: 4.0.4
+  createdTime: 1728583106636
+  modifiedTime: 1728583106636
+  lastModifiedBy: UkXd4NXnT5o2bQiL
+_id: sznA0vDpZgepjAWy
+sort: 0
+_key: '!macros!sznA0vDpZgepjAWy'
+

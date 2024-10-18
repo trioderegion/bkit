@@ -1,0 +1,54 @@
+name: Find Activity Items
+type: script
+author: UkXd4NXnT5o2bQiL
+img: icons/tools/scribal/magnifying-glass.webp
+scope: global
+command: |-
+  const packId = 'dnd-players-handbook.spells';
+  const activityType = 'summon';
+  /////////////////////////////////////////////
+  async function showResults(uuids) {
+
+    const links = await Promise.all(uuids.map( u => fromUuid(u).then(d => d.toAnchor({name: d.name}).outerHTML)));
+
+    return foundry.applications.api.DialogV2.prompt({
+      rejectClose: false,
+      ok: {callback: (event, button) => {
+        return;
+      }},
+      position: {width: 400, left:50},
+      modal: false,
+      content: `<fieldset style="display:block">${links.join('')}</fieldset>`,
+      window: {title: `Found Items with [${activityType}] activity`}
+    });
+
+  }
+
+  const pack = game.packs.get(packId);
+  const index = await pack.getIndex();
+  const matches = [];
+  for (const element of index) {
+    const doc = await fromUuid(element.uuid);
+    const hasSummon = doc.system.activities.contents.find( a => a.type == 'summon' );
+    if (hasSummon) matches.push(element.uuid);
+  }
+
+  showResults(matches);
+folder: null
+ownership:
+  default: 0
+  UkXd4NXnT5o2bQiL: 3
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  coreVersion: '12.331'
+  systemId: dnd5e
+  systemVersion: 4.0.4
+  createdTime: 1728322040530
+  modifiedTime: 1728322061077
+  lastModifiedBy: UkXd4NXnT5o2bQiL
+_id: Skb0sF46ygQlyaNC
+sort: 900000
+_key: '!macros!Skb0sF46ygQlyaNC'
+

@@ -1,0 +1,43 @@
+name: Clone
+type: script
+command: >-
+  const source = await
+  fromUuid('Compendium.dnd-players-handbook.actors.Actor.phbsplConjuredEl');
+
+  const names = ['Conjured Earth Elemental', 'Conjured Fire Elemental',
+  'Conjured Water Elemental'];
+
+  const prefix = 'phb';
+
+
+  const datas = names.map( name => {
+    const data = source.toObject();
+    delete data._stats;
+    data.name = name;
+    data._id = game.dnd5e.utils.staticID(prefix + name.slugify({lowercase: false, replacement: '', strict: true}));
+    return data;
+  });
+
+
+  await Actor.create(datas, {pack: source.pack, keepId: true});
+img: icons/svg/dice-target.svg
+author: UkXd4NXnT5o2bQiL
+scope: global
+folder: null
+ownership:
+  default: 0
+  UkXd4NXnT5o2bQiL: 3
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  coreVersion: '12.331'
+  systemId: dnd5e
+  systemVersion: 4.0.4
+  createdTime: 1728322028904
+  modifiedTime: 1728322061077
+  lastModifiedBy: UkXd4NXnT5o2bQiL
+_id: xXabMr0vbHsH64PT
+sort: 1000000
+_key: '!macros!xXabMr0vbHsH64PT'
+

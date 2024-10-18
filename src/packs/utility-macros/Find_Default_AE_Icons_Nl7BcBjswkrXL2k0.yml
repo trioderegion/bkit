@@ -1,0 +1,35 @@
+name: Find Default AE Icons
+type: script
+author: UkXd4NXnT5o2bQiL
+img: icons/svg/aura.svg
+scope: global
+command: |-
+  const packId = 'dnd-players-handbook.spells';
+  const searchTerm = 'Utility';
+
+  const pack = game.packs.get(packId);
+  const index = await pack.getIndex();
+
+  for (const {_id} of index.contents) {
+    const doc = await pack.getDocument(_id);
+    const found = doc.effects.some(e => e.name == 'New Effect' || e.img.includes('aura.svg'));
+    if (found) doc.sheet.render(true);
+  }
+folder: null
+ownership:
+  default: 0
+  UkXd4NXnT5o2bQiL: 3
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  coreVersion: '12.331'
+  systemId: dnd5e
+  systemVersion: 4.0.4
+  createdTime: 1728322044778
+  modifiedTime: 1728322061077
+  lastModifiedBy: UkXd4NXnT5o2bQiL
+_id: Nl7BcBjswkrXL2k0
+sort: 400000
+_key: '!macros!Nl7BcBjswkrXL2k0'
+

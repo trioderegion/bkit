@@ -5,7 +5,6 @@
   "projectUrl": "",
   "entryPoints": {
     "main": "index.mjs",
-    "external": "lib/tiny.mjs",
     "compendia": {
       "path": "packs/*/",
       "type": {

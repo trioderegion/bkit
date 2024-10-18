@@ -1,0 +1,23 @@
+{
+  "name": "fcct",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.mjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "rollup -c node:rollup-config-badger-den --config-den src/fcct:dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trioderegion/fcct.git"
+  },
+  "author": "",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/trioderegion/fcct/issues"
+  },
+  "homepage": "https://github.com/trioderegion/fcct#readme",
+  "dependencies": {
+    "rollup-config-badger-den": "^1.4.0"
+  }
+}

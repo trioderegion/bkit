@@ -1,0 +1,184 @@
+name: Review Actors and ProtoTokens
+type: script
+author: UkXd4NXnT5o2bQiL
+img: systems/dnd5e/icons/svg/multiclass.svg
+scope: global
+command: |-
+  const packId = 'dnd-players-handbook.actors';
+
+  const pack = game.packs.get(packId);
+  const index = await pack.getIndex();
+  const actions = new Map();
+
+  for (const docData of index) {
+    const doc = await pack.getDocument(docData._id);
+
+   
+    if (this.getFlag('dnd-players-handbook', doc.uuid)) continue;
+    doc.sheet.render(true, {left: 1200, top: 500});
+
+      const renderOptions = {
+        left: Math.max(1200 - 560 - 10, 10),
+        top: 500
+      };
+    
+    const protoConfig = new CONFIG.Token.prototypeSheetClass(doc.prototypeToken, renderOptions);
+    protoConfig.render(true);
+    const reviewed = await foundry.applications.api.DialogV2.confirm({
+        content: `Complete review of ${doc.name}?`, position: {top:0}});
+      
+    if (!reviewed) return;
+        
+    await this.setFlag('dnd-players-handbook', doc.uuid, true);
+    doc.sheet.close();
+    await doc.update({'system.details.biography.value': ''});
+  }
+
+  ui.notifications.info('Review Complete!')
+folder: null
+ownership:
+  default: 0
+  UkXd4NXnT5o2bQiL: 3
+flags:
+  dnd-players-handbook:
+    Compendium:
+      dnd-players-handbook:
+        actors:
+          Actor:
+            phbBeastoftheLan: true
+            phbBeastoftheSea: true
+            phbBeastoftheSky: true
+            phbDuplicate0000: true
+            phbInvisibleSens: true
+            phbSpectralAnima: true
+            phbabsBeholderki: true
+            phbabsMindFlayer: true
+            phbabsSlaadSpiri: true
+            phbbesBestialAir: true
+            phbbesBestialLan: true
+            phbbesBestialWat: true
+            phbcesAngelSpiri: true
+            phbcesDefenderSp: true
+            phbcosClayConstr: true
+            phbcosMetalConst: true
+            phbcosStoneConst: true
+            phbelsAirElement: true
+            phbelsEarthEleme: true
+            phbelsFireElemen: true
+            phbelsFumingFeyS: true
+            phbelsMirthfulFe: true
+            phbelsTricksyFey: true
+            phbelsWaterEleme: true
+            phbfisDemonSpiri: true
+            phbfisDevilSpiri: true
+            phbfisYugolothSp: true
+            phbginGiantCenti: true
+            phbginGiantSpide: true
+            phbginGiantWasp0: true
+            phbhaoAnimatedOb: true
+            phbiluCreature00: true
+            phbiluObject0000: true
+            phbiluSensory000: true
+            phblaoAnimatedOb: true
+            phbmaoAnimatedOb: true
+            phbmobAberrantSp: true
+            phbmobApe0000000: true
+            phbmobBadger0000: true
+            phbmobBat0000000: true
+            phbmobBestialSpi: true
+            phbmobBlackBear0: true
+            phbmobBoar000000: true
+            phbmobBrownBear0: true
+            phbmobCamel00000: true
+            phbmobCat0000000: true
+            phbmobCelestialS: true
+            phbmobConstricto: true
+            phbmobConstructS: true
+            phbmobCrab000000: true
+            phbmobCrocodile0: true
+            phbmobDireWolf00: true
+            phbmobDraconicSp: true
+            phbmobDraftHorse: true
+            phbmobElementalS: true
+            phbmobElephant00: true
+            phbmobElk0000000: true
+            phbmobFaithfulHo: true
+            phbmobFeySpirit0: true
+            phbmobFiendishSp: true
+            phbmobFrog000000: true
+            phbmobGiantBadge: true
+            phbmobGiantCrab0: true
+            phbmobGiantGoat0: true
+            phbmobGiantInsec: true
+            phbmobGiantSeaho: true
+            phbmobGiantSpide: true
+            phbmobGiantWease: true
+            phbmobGoat000000: true
+            phbmobHawk000000: true
+            phbmobImp0000000: true
+            phbmobLion000000: true
+            phbmobLizard0000: true
+            phbmobMastiff000: true
+            phbmobMule000000: true
+            phbmobOctopus000: true
+            phbmobOtherworld: true
+            phbmobOwl0000000: true
+            phbmobPanther000: true
+            phbmobPony000000: true
+            phbmobPseudodrag: true
+            phbmobQuasit0000: true
+            phbmobRat0000000: true
+            phbmobRaven00000: true
+            phbmobReefShark0: true
+            phbmobRidingHors: true
+            phbmobScorpion00: true
+            phbmobSkeleton00: true
+            phbmobSlaadTadpo: true
+            phbmobSphinxofWo: true
+            phbmobSpider0000: true
+            phbmobSprite0000: true
+            phbmobTiger00000: true
+            phbmobUndeadSpir: true
+            phbmobVenomousSn: true
+            phbmobWarhorse00: true
+            phbmobWeasel0000: true
+            phbmobWolf000000: true
+            phbmobZombie0000: true
+            phbostCelestial0: true
+            phbostFey0000000: true
+            phbostFiend00000: true
+            phbsaoAnimatedOb: true
+            phbsplArcaneEye0: true
+            phbsplBigbysHand: true
+            phbsplConjuredEl: true
+            phbsplConjuredFe: true
+            phbsplFlamingSph: true
+            phbsplFloatingDi: true
+            phbsplGraspingVi: true
+            phbsplGuardianof: true
+            phbsplLight00000: true
+            phbsplMageHand00: true
+            phbsplMediumDanc: true
+            phbsplMordSword0: true
+            phbsplSecretChes: true
+            phbsplSpiritualW: true
+            phbsplTinyDancin: true
+            phbsplUnseenServ: true
+            phbsumPhantomSte: true
+            phbtaoAnimatedOb: true
+            phbudsGhostlySpi: true
+            phbudsPutridSpir: true
+            phbudsSkeletalSp: true
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  coreVersion: '12.331'
+  systemId: dnd5e
+  systemVersion: 4.0.4
+  createdTime: 1728322058996
+  modifiedTime: 1728322061077
+  lastModifiedBy: UkXd4NXnT5o2bQiL
+_id: 8pHLTcPAmiKRn0p7
+sort: 300000
+_key: '!macros!8pHLTcPAmiKRn0p7'
+

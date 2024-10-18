@@ -1,0 +1,42 @@
+name: Find Markers in Desc
+type: script
+author: UkXd4NXnT5o2bQiL
+img: icons/svg/dice-target.svg
+scope: global
+command: >-
+  const packId = 'dnd-players-handbook.equipment';
+
+  const searchTerm = '<table>';
+
+
+  const pack = game.packs.get(packId);
+
+  const index = await pack.getIndex({fields: ["system.description.value"]});
+
+
+  const found = index.values().filter( d => foundry.utils.getProperty(d,
+  'system.description.value')?.includes(searchTerm) )
+
+
+  ui.notifications.info(`Found ${found.length} matching items`);
+
+
+  found.forEach( d => fromUuid(d.uuid).then( doc => doc.sheet.render(true) ));
+folder: null
+ownership:
+  default: 0
+  UkXd4NXnT5o2bQiL: 3
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  coreVersion: '12.331'
+  systemId: dnd5e
+  systemVersion: 4.0.4
+  createdTime: 1728322049662
+  modifiedTime: 1728322061077
+  lastModifiedBy: UkXd4NXnT5o2bQiL
+_id: 4Rn97SUJinMGybAA
+sort: 500000
+_key: '!macros!4Rn97SUJinMGybAA'
+

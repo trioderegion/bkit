@@ -1,0 +1,97 @@
+name: Find common items
+type: script
+author: UkXd4NXnT5o2bQiL
+img: icons/tools/scribal/magnifying-glass.webp
+scope: global
+command: >-
+  const packId = 'dnd-players-handbook.actors';
+
+
+  async function promptImage(name, uuids) {
+
+  const pathInput= new foundry.data.fields.FilePathField({categories: ['IMAGE'],
+  label: 'Filepath', required:true}).toFormGroup({}, {name: 'image'}).outerHTML;
+
+
+  const links = await Promise.all(uuids.map( u => fromUuid(u).then(d =>
+  d.toAnchor({name: d.parent.name}).outerHTML)));
+
+
+  const result = foundry.applications.api.DialogV2.prompt({
+    rejectClose: false,
+    ok: {callback: (event, button) => {
+      const path = button.form.elements.image.value;
+      return path;
+    }},
+    position: {width: 400, left:50},
+    modal: false,
+    content: `<fieldset><legend>${name}</legend>${links.join('')}</fieldset><fieldset>${pathInput}</fieldset>`,
+    window: {title: `Set Common Image`}
+  })
+
+   return result;
+  }
+
+
+  const pack = game.packs.get(packId);
+
+  const index = await pack.getDocuments();
+
+
+  const actions = new Map();
+
+
+  for (const doc of index) {
+    doc.items.forEach( i => {
+      if (i.img.includes('svg')) {
+        if (actions.has(i.name)) {
+          actions.get(i.name).push(i.uuid);
+        } else actions.set(i.name, [i.uuid]);
+      }
+    });
+  }
+
+
+  //console.log(actions);
+
+  let activeDoc;
+
+  const fpHook = Hooks.on('getFilePickerHeaderButtons', (app) => {
+    app.options.document = activeDoc;
+  });
+
+
+  // Iterate over the common items and assign same icon
+
+  for (const [name, uuids] of actions.entries()) {
+    console.log('Showing', name, uuids);
+    activeDoc = await fromUuid(uuids.at(0));
+    const path = await promptImage(name, uuids);
+    if (!path || path.length == 0) {
+      ui.notifications.info('Flow Stopped');
+      break;
+    }
+    
+    Promise.all(uuids.map( u => fromUuid(u).then( d => d.update({img: path})))).then( _ => ui.notifications.info(`Set ${uuids.length} instances of "${name}" to [${path}]`))
+  }
+
+
+  Hooks.off('getFilePickerHeaderButtons', fpHook);
+folder: null
+ownership:
+  default: 0
+  UkXd4NXnT5o2bQiL: 3
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  coreVersion: '12.331'
+  systemId: dnd5e
+  systemVersion: 4.0.4
+  createdTime: 1728322042846
+  modifiedTime: 1728322061077
+  lastModifiedBy: UkXd4NXnT5o2bQiL
+_id: nPylcLwcAawFYOIw
+sort: 800000
+_key: '!macros!nPylcLwcAawFYOIw'
+

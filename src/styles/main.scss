@@ -1,0 +1,20 @@
+.app.dnd5e2.sheet.item {
+	min-width: 1000px;
+	& .window-content .sheet-body {
+		display: flex;
+		flex-direction: row;
+    justify-content: space-between;
+		& .tab {
+			&[data-tab="description"],
+			&[data-tab="details"] {
+				display: flex;
+				flex: 0 0 400px;
+			}
+
+			&[data-tab="activities"],
+			&[data-tab="effects"] {
+				flex: 0 0 200px;
+			}
+		}
+	}
+}

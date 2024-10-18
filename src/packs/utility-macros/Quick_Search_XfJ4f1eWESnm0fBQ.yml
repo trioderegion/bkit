@@ -1,0 +1,53 @@
+name: Quick Search
+type: script
+command: |-
+  await Dialog.prompt({
+   content: '<p><input id="quick-search-prefix" placeholder="Enter Search String" autofocus tabindex=0 style="width:100%"></p>',
+   title: 'Quick Search',
+   callback: async (html)=> {
+      const input = html[0].querySelector('#quick-search-prefix');
+      const {Item = []} = game.documentIndex.lookup(input.value);
+      
+      const groups = Item.reduce( (acc, item) => {
+        acc[item.entry.type] ??= [];
+        acc[item.entry.type].push(item.uuid);
+        return acc;
+      }, {});
+
+      const raw = Reflect.ownKeys(groups).reduce( (acc, group) => {
+        acc += `<h3>${group.titleCase()}</h3>`
+        
+        const links = groups[group].map( uuid => `@UUID[${uuid}]` );
+        acc += `<ul><li>${links.join('</li><li>')}</li></ul>`
+        return acc;
+      }, '');
+
+      const content = await TextEditor.enrichHTML(raw, {async:true});
+
+      Dialog.prompt({
+        content,
+        title: 'Search Results'
+      })
+  }
+  })
+img: icons/svg/eye.svg
+author: UkXd4NXnT5o2bQiL
+scope: global
+folder: null
+ownership:
+  default: 0
+  UkXd4NXnT5o2bQiL: 3
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  coreVersion: '12.331'
+  systemId: dnd5e
+  systemVersion: 4.0.4
+  createdTime: 1728580758040
+  modifiedTime: 1728580758040
+  lastModifiedBy: UkXd4NXnT5o2bQiL
+_id: XfJ4f1eWESnm0fBQ
+sort: 0
+_key: '!macros!XfJ4f1eWESnm0fBQ'
+
