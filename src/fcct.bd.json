@@ -1,0 +1,47 @@
+{
+  "version": "1.0.0",
+  "title": "Foundry Content Creation Tools",
+  "description": "",
+  "projectUrl": "",
+  "entryPoints": {
+    "main": "index.mjs",
+    "external": "lib/tiny.mjs",
+    "compendia": {
+      "path": "packs/*/",
+      "type": {
+        "utility-macros": "Macro"
+      },
+      "label": {
+        "utility-macros": "Utility macros"
+      },
+      "folder": {
+        "label": "Content Tools",
+        "color": "#aa0033"
+      }
+    }
+  },
+  "profile": {
+    "dev":{
+      "dest":"../build",
+      "compress":false,
+      "sourcemaps": true,
+      "clean": true,
+      "hmr": true
+    }
+  },
+  "dependencies": {
+    "core": [
+      "12",
+      "12"
+    ]
+  },
+  "storage": true,
+  "static": [
+  ],
+  "authors": [
+    {
+      "name": "trioderegion",
+      "url": "https://www.github.com/trioderegion"
+    }
+  ]
+}
