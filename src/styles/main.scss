@@ -18,3 +18,26 @@
 		}
 	}
 }
+
+.active-effect-sheet {
+  
+  .window-header,
+  .window-content {
+    width: 700px;
+  }
+  
+  .editor {
+    height: 300px;
+  }
+
+  .changes-list .effect-change {
+    .key,
+    .mode {
+      flex-basis: min-content; 
+    }
+
+    .value {
+      flex-basis:auto;
+    }
+  }
+}

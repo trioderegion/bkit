@@ -24,7 +24,7 @@
       "dest":"../build",
       "compress":false,
       "sourcemaps": true,
-      "clean": true,
+      "clean": false,
       "hmr": true
     }
   },
