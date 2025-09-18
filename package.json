@@ -18,7 +18,6 @@
   },
   "homepage": "https://github.com/trioderegion/fcct#readme",
   "dependencies": {
-    "@mh4gf/prosemirror-details": "^1.1.0",
-    "rollup-config-badger-den": "^1.4.0"
+    "rollup-config-badger-den": "^1.7.1"
   }
 }

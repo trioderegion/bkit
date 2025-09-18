@@ -1,0 +1,35 @@
+name: Move module flags to system
+type: script
+author: xREoBzi7Iao0TR7B
+img: icons/svg/dice-target.svg
+scope: global
+command: |-
+  const MODULE_ID = 'dnd-dungeon-masters-guide'
+  const pack = await game.packs.get(MODULE_ID + '.content').getIndex();
+
+  for(const entry of pack) {
+    const doc = await fromUuid(entry.uuid);
+    const flag = doc.getFlag(MODULE_ID, 'navigation');
+    await doc.setFlag('dnd5e', 'navigation', flag);
+    await doc.unsetFlag(MODULE_ID, 'navigation');
+  }
+
+  ui.notifications.success('Done');
+folder: mT6GOFWzrSFU7Ifd
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: dnd5e
+  systemVersion: 5.1.8
+  createdTime: 1758207673748
+  modifiedTime: 1758207673748
+  lastModifiedBy: xREoBzi7Iao0TR7B
+ownership:
+  default: 0
+  xREoBzi7Iao0TR7B: 3
+_id: pnIZii2Kb1aEqbHi
+sort: 0
+_key: '!macros!pnIZii2Kb1aEqbHi'

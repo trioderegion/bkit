@@ -1,0 +1,90 @@
+name: Clone
+type: script
+command: >-
+  const fields = [
+    new foundry.data.fields.StringField({label: 'Source Item UUID'}).toFormGroup({}, {name: 'source', }).outerHTML,
+    new foundry.data.fields.StringField({label: 'Prefix'}).toFormGroup({}, {name: 'prefix', }).outerHTML,
+    new foundry.data.fields.StringField({label: 'Names (; delim)'}).toFormGroup({}, {name: 'names', }).outerHTML,
+  ]
+
+
+  const content = `<fieldset
+  style="width:600px;">${fields.join('')}</fieldset>`;
+
+
+  const answer = await foundry.applications.api.DialogV2.prompt({
+    content,
+    title: 'Item Cloner',
+    ok: {
+      callback: (event,button) => new FormDataExtended(button.form).object
+    },
+    position: {top: 100},
+    rejectClose: true
+  });
+
+
+  const {source, prefix, names} = answer;
+
+  const item = await fromUuid(source);
+
+  const data = item.toObject();
+
+  delete data._stats;
+
+  console.log(names, names.split(';'));
+
+  const datas = names.split(';').map( name => {
+    const newItem = foundry.utils.duplicate(data);
+    newItem.name = name.trim();
+    newItem._id = game.dnd5e.utils.staticID(prefix + name.slugify({lowercase: false, replacement: '', strict: true}));
+    return newItem;
+  });
+
+
+  /* Correct colliding IDs */
+
+  const collides = (data, collection) => collection.has(data._id);
+
+
+  datas.forEach( d => {
+    const collection = item.pack ? game.packs.get(item.pack) : game.items;
+    let idOffset = 1;
+    while(collides(d, collection)) {
+      if (idOffset > 9) throw new Error('Item ID collision unresolved after 9 attempts!')
+      const idChars = Array.from(d._id);
+      idChars[idChars.length-1] = idOffset++;
+      d._id = idChars.join('');
+    }
+  })
+
+
+  const idCollision = datas.some( d => {
+    if (item.pack) return game.packs.get(item.pack).has(d._id);
+    return game.items.has(d._id);
+  });
+
+
+  if (idCollision) return ui.notifications.error("Unexpected ID Collision!!");
+
+
+  await item.constructor.create(datas, {pack: item.pack, keepId: true});
+img: icons/svg/village.svg
+author: xREoBzi7Iao0TR7B
+scope: global
+folder: omQP7IAQLxa0uKx5
+ownership:
+  default: 0
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  coreVersion: '13.348'
+  systemId: dnd5e
+  systemVersion: 4.2.0
+  createdTime: 1733353173069
+  modifiedTime: 1758207706892
+  lastModifiedBy: xREoBzi7Iao0TR7B
+  exportSource: null
+_id: nhsLNfeKtywVtx4A
+sort: 0
+_key: '!macros!nhsLNfeKtywVtx4A'

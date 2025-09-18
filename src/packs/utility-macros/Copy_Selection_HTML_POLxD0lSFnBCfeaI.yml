@@ -1,0 +1,66 @@
+name: Copy Selection HTML
+type: script
+command: |-
+  function getSelectionHtml() {
+      const selection = window.getSelection();
+    
+      if (selection.type !== "Range") {
+        ui.notifications.error("No Range selected for document extraction!");
+        return;
+      }
+    
+      /* get 'top' and 'bottom' ordered */
+      if (selection.anchorOffset > selection.extentOffset) {
+        ui.notifications.warn("Please select top to bottom.");
+        return;
+      }
+    
+      selection.modify("extend", "forward", "paragraphboundary");
+      //selection.modify("extend", "backward", "paragraphboundary");
+    
+      const initialRange = selection.getRangeAt(0);
+
+      const start =
+        initialRange.commonAncestorContainer.nodeName == "P"
+        ? initialRange.commonAncestorContainer
+        : selection.anchorNode.parentElement;
+    
+      selection.setBaseAndExtent(
+        start,
+        0,
+        selection.extentNode,
+        selection.extentOffset
+      );
+    
+      const range = selection.getRangeAt(0);
+      const wrapper = document.createElement('div');
+      wrapper.append(range.cloneContents());
+      if (wrapper.firstChild.nodeName !== 'P')
+        return `<p>${wrapper.innerHTML}</p>`;
+      else return wrapper.innerHTML;
+    }
+
+  const html = getSelectionHtml();
+  console.log(html);
+          navigator.clipboard.writeText(html);
+          ui.notifications.info('Converted HTML copied to clipboard.');
+img: icons/svg/up.svg
+author: xREoBzi7Iao0TR7B
+scope: global
+folder: omQP7IAQLxa0uKx5
+ownership:
+  default: 0
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  coreVersion: '13.348'
+  systemId: dnd5e
+  systemVersion: 4.2.0
+  createdTime: 1733353188583
+  modifiedTime: 1758207710685
+  lastModifiedBy: xREoBzi7Iao0TR7B
+  exportSource: null
+_id: POLxD0lSFnBCfeaI
+sort: 50000
+_key: '!macros!POLxD0lSFnBCfeaI'

@@ -1,0 +1,95 @@
+name: Implement Actor
+type: script
+author: xREoBzi7Iao0TR7B
+img: icons/commodities/tech/blueprint.webp
+scope: global
+command: >-
+  const backupFolderId = 'mmActorBackup000';
+
+  const backupFolder = game.folders.has(backupFolderId) ?
+  game.folders.get(backupFolderId) : await Folder.create({_id: backupFolderId,
+  type: 'Actor', name: 'MM Backup'}, {keepId: true});
+
+
+  const aui = ui.activeWindow.document;
+
+
+  if (!game.actors.has(aui.id)) {
+    const actorPack = game.packs.get(aui.pack);
+    await game.actors.importFromCompendium(actorPack, aui.id, {folder: backupFolderId}, {keepId: true, renderSheet: false});
+  }
+
+
+  async function waitForImplementation(basicItem, templateItem) {
+
+    basicItem.sheet.render(true, {top:1000, left:0});
+    templateItem.sheet.render(true, {top:1000, left:2000});
+
+    const answer = await foundry.applications.api.DialogV2.confirm({
+      window: {title: `Implementing [${templateItem.name}]`},
+      position: {top: 0, left: 1200},
+      yes: {label: 'Finalize'},
+      no: {label: 'Stop'}
+    });
+
+    basicItem.sheet.close({closeKey: true});
+    templateItem.sheet.close({closeKey: true});
+
+    return answer;
+  }
+
+
+  const defaultItems = aui.items.filter( i => i.img.includes('svg/') );
+
+  defaultItems.sort( (l, r) => l < r );
+
+
+  let oddity = false;
+
+  let sort = 0;
+
+  for (const item of defaultItems) {
+    const templateUuid = item._stats.compendiumSource;
+    const templateItem = await fromUuid(templateUuid);
+    if (!templateItem) {
+      oddity = true;
+      continue;
+    }
+
+    let newItem = null;
+    if (aui.items.has(templateItem.id)) {
+      newItem = aui.items.get(templateItem.id);
+    } else {
+      const templateData = game.items.fromCompendium(templateItem, {keepId: true, clearOwnership: true, clearSort: true});
+
+      templateData.sort = sort++;
+    
+      newItem = (await aui.createEmbeddedDocuments('Item', [templateData], {keepId: true})).at(0);
+    }
+
+    if(!await waitForImplementation(item, newItem)) break;
+
+    await item.delete();
+    
+  }
+
+
+  if (oddity) ui.notifications.warning(`Something weird happened! Double check
+  ${aui.name}`);
+folder: omQP7IAQLxa0uKx5
+ownership:
+  default: 0
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  coreVersion: '13.348'
+  systemId: dnd5e
+  systemVersion: 4.2.0
+  createdTime: 1736890486267
+  modifiedTime: 1758207770401
+  lastModifiedBy: xREoBzi7Iao0TR7B
+  exportSource: null
+_id: fOKVcSLiLnxJKZAP
+sort: 1400000
+_key: '!macros!fOKVcSLiLnxJKZAP'

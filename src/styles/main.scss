@@ -1,22 +1,76 @@
-.app.dnd5e2.sheet.item {
-	min-width: 1000px;
-	& .window-content .sheet-body {
-		display: flex;
-		flex-direction: row;
-    justify-content: space-between;
-		& .tab {
-			&[data-tab="description"],
+.application.dnd5e2.sheet.item {
+	min-width: min-content;
+	& .window-content {
+
+    search {display: none;}
+    max-height: 90vh;
+		display: grid;
+    gap: 0.5em;
+    grid: "desc header header" fit-content(0)
+          "desc deet deet" fit-content(40vh)
+          "adv  eff act" fit-content(15vh)
+          ".  . tabs" auto
+          / 400px 400px 300px;
+
+    [data-application-part="header"] {
+      grid-area:header;
+    }
+
+    [data-application-part="tabs"] {
+      grid-area:tabs;
+    }
+
+    nav {
+      [data-tab="description"], [data-tab="details"] {
+        display:none;
+      }
+    }
+
+    hr.ampersand {
+      display:none;
+    }
+
+		& .tab:not(.contents) {
+      display:flex;
+			&[data-tab="description"] {
+        grid-area:desc;
+      }
+
 			&[data-tab="details"] {
-				display: flex;
-				flex: 0 0 400px;
+        grid-area:deet;
 			}
 
-			&[data-tab="activities"],
+			&[data-tab="activities"] {
+        grid-area:act;
+      }
+
 			&[data-tab="effects"] {
-				flex: 0 0 200px;
+        grid-area:eff;
+			}
+
+			&[data-tab="advancement"] {
+        grid-area:adv;
 			}
 		}
 	}
+}
+
+.application.dnd5e2.activity.sheet {
+  min-width:fit-content;
+  .window-content {
+    display: grid;
+    grid-template-columns: repeat(3, 300px);
+    grid-template-rows: repeat(auto-fill, minmax(50px, auto));
+    grid-auto-flow:dense;
+
+    .tab {
+      overflow-y:auto;
+      display:flex;
+    }
+
+    .tabs {display: none;}
+
+  }
 }
 
 .active-effect-sheet {

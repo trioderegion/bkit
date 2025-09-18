@@ -1,0 +1,25 @@
+name: Toggle Actor Item Descriptions
+type: script
+command: >-
+  ui.activeWindow.element[0].querySelectorAll('[data-toggle-description]').forEach(
+  b => ui.activeWindow._onToggleDescription({currentTarget: b}))
+img: icons/svg/wall-direction.svg
+author: xREoBzi7Iao0TR7B
+scope: global
+folder: mT6GOFWzrSFU7Ifd
+ownership:
+  default: 0
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  coreVersion: '13.348'
+  systemId: dnd5e
+  systemVersion: 4.4.0
+  createdTime: 1742850045780
+  modifiedTime: 1758207673736
+  lastModifiedBy: xREoBzi7Iao0TR7B
+  exportSource: null
+_id: sq0PIeelMuELWwyJ
+sort: 900000
+_key: '!macros!sq0PIeelMuELWwyJ'

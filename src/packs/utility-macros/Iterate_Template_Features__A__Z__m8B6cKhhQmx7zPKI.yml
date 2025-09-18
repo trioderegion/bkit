@@ -1,0 +1,93 @@
+name: Iterate Template Features (A->Z)
+type: script
+command: >-
+  const pack = game.packs.get('dnd-monster-manual.actors');
+
+  const templatePack = game.packs.get('dnd-monster-manual.features');
+
+
+
+  async function showAndWait(templateUuid, usesUuid) {
+    const template = await fromUuid(templateUuid);
+    const uses = await Promise.all(usesUuid.map(uuid => fromUuid(uuid)));
+
+    template.sheet.render(true, {top:1000, left:2000});
+    uses.forEach( u => u.sheet.render(true, {top: 1000, left: 0}) );
+
+    const answer = await foundry.applications.api.DialogV2.confirm({
+      window: {title: 'View Next Item?'},
+      position: {top: 0, left: 1200},
+    });
+
+    /* Close all windows */
+      for ( const app of Object.values(ui.windows) ) {
+        app.close({closeKey: true});
+      }
+      for ( const app of foundry.applications.instances.values() ) {
+        if ( app.hasFrame ) app.close({closeKey: true});
+      }
+      
+  return answer;
+
+  }
+
+
+  const featureMap = new Map();
+
+  ui.notifications.info('Gathering feature names...');
+
+  for (const entry of await pack.getIndex() ){
+    const actor = await fromUuid(entry.uuid);
+    actor.items.forEach( i =>
+      featureMap.has(i.name) ? featureMap.get(i.name).push(i.uuid) : featureMap.set(i.name, [i.uuid])
+    );
+  }
+
+  ui.notifications.info('Sorting ascending alphabetical...');
+
+  const sortedFeatures = Array.from(featureMap).sort( ([ l, ], [r , ]) =>
+  l.compare(r) );
+
+  console.log(sortedFeatures);
+
+
+  ChatMessage.create({
+    content: `<p>${sortedFeatures.map( ([name, uses]) => `${name} — ${uses.length}` ).join('<br>')}</p>`,
+    speaker: {alias: 'Feature Reuse Report'},
+  });
+
+
+  const templateIndex = await templatePack.getIndex();
+
+  for (const [name, uses] of sortedFeatures) {
+    const entry = templateIndex.find( e => e.name === name );
+    if (!entry) {
+      console.warn('Could not find template item named:', name);
+      continue;
+    }
+    if (!entry.img.includes('/svg')) continue;
+
+    const cont = await showAndWait(entry.uuid, uses);
+
+    if(!cont) return;
+  }
+img: icons/svg/stone-path.svg
+author: xREoBzi7Iao0TR7B
+scope: global
+folder: omQP7IAQLxa0uKx5
+ownership:
+  default: 0
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  coreVersion: '13.348'
+  systemId: dnd5e
+  systemVersion: 4.4.0
+  createdTime: 1742850209434
+  modifiedTime: 1758207746722
+  lastModifiedBy: xREoBzi7Iao0TR7B
+  exportSource: null
+_id: m8B6cKhhQmx7zPKI
+sort: 800000
+_key: '!macros!m8B6cKhhQmx7zPKI'

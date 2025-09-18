@@ -1,0 +1,29 @@
+name: Open Owning Actor
+type: script
+command: |-
+  let parent = ui.activeWindow.document.parent;
+
+  while (parent && parent.documentName !== 'Actor') parent = parent.parent;
+
+  if(parent) parent.sheet.render(true);
+img: icons/svg/cowled.svg
+author: xREoBzi7Iao0TR7B
+scope: global
+folder: omQP7IAQLxa0uKx5
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: dnd5e
+  systemVersion: 5.1.8
+  createdTime: 1758207673748
+  modifiedTime: 1758207748386
+  lastModifiedBy: xREoBzi7Iao0TR7B
+ownership:
+  default: 0
+  xREoBzi7Iao0TR7B: 3
+_id: ZCwpViK2ooiWZOmc
+sort: 25000
+_key: '!macros!ZCwpViK2ooiWZOmc'

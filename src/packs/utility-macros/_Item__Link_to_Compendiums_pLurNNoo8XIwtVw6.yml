@@ -1,0 +1,137 @@
+name: '[Item] Link to Compendiums'
+type: script
+author: fd4dRrkazgKXBTwl
+img: icons/svg/anchor.svg
+scope: global
+command: >-
+  const itemCompendiums = game.packs.map( p => ({value: p.collection, type:
+  p.documentName, label: p.title })).filter( d => d.type == 'Item');
+
+
+  const fields = [
+    new foundry.data.fields.DocumentUUIDField({label: 'Journal to Scan'}).toFormGroup({}, {name: 'journaluuid', }).outerHTML,
+    new foundry.data.fields.SetField(new foundry.data.fields.StringField(), {label: 'Reference Compendiums'}).toFormGroup({}, {options: itemCompendiums, name: 'compendium' }).outerHTML,
+  ]
+
+
+  const content = `<fieldset>${fields.join('')}</fieldset>`;
+
+
+  const answer = await foundry.applications.api.DialogV2.prompt({
+    content,
+    title: 'Localize to Compendium',
+    ok: {
+      callback: (event,button) => new foundry.applications.ux.FormDataExtended(button.form).object
+    },
+    position: {top: 100},
+    rejectClose: true});
+
+  async function collectLinks(pageUuid) {
+    const page = await fromUuid(pageUuid);
+    const found = [];
+    const re = /(?:@Embed|@UUID)\[([a-zA-Z0-9\.\-]*)\W/g;
+    let result;
+    while (result = re.exec(page.text.content)) {
+      found.push(result.at(1));
+    }
+    return found;
+  }
+
+
+  function filterLinks(uuidList) {
+    return uuidList.filter( u => u.includes('Item') && !u.includes('ActiveEffect'));
+  }
+
+
+  async function selectReplacement(original, replacement) {
+    const content = `
+    
+    <div class="flexrow"><p>@UUID[${replacement}] -> @UUID[${original}]</p></div>`
+
+    const ok = {
+      label: 'Replace',
+      action: 'ok',
+      callback: () => ([original, replacement]),
+    }
+
+    const buttons = [{
+      label: 'Keep',
+      action: 'keep',
+      callback: () => null,
+    }]
+
+    const response = await foundry.applications.api.DialogV2.prompt({
+      content: await foundry.applications.ux.TextEditor.enrichHTML(content),
+      ok,
+      buttons
+    })
+
+    return response;
+  }
+
+
+  async function gatherCorrections(referenceCompendiums, uuidList) {
+    const pairs = [];
+    for (const uuid of uuidList) {
+      const {collection = null, id = null, documentType = null} = foundry.utils.parseUuid(uuid) ?? {};
+      if (collection.collection) continue; // No corrections needed
+
+      /* World document, search provided compendiums for a matching ID */
+      const putativeUuids = referenceCompendiums.map( c => foundry.utils.buildUuid({id, documentName: documentType, pack: c,}));
+      
+      const found = await Promise.all(putativeUuids.map( u => foundry.utils.fromUuid(u)));
+      const referenceItem = found.find(e => e);
+
+      const replacementPair = await selectReplacement(uuid, referenceItem.uuid);
+      
+      if (replacementPair) {
+        pairs.push(replacementPair);
+      }
+    }
+
+    return pairs;
+  }
+
+
+  const journal = await fromUuid(answer.journaluuid);
+
+
+  for (const page of journal.pages) {
+    const uuids = await collectLinks(page.uuid).then( r => filterLinks(r));
+    page.parent.sheet.render(true, {pageId: page.id})
+    const replacements = await gatherCorrections(answer.compendium, uuids);
+    
+    if (replacements.length) {
+      let newText;
+      for (const [original, replacement] of replacements) {
+        newText ??= page.text.content;
+        newText = newText.replaceAll(`[${original}`, `[${replacement}`);
+      }
+    
+      await page.update({'text.content': newText});
+    }
+
+  //console.log(replacements);
+
+  }
+
+
+  //console.log(answer, filterLinks(await collectLinks(answer.pageuuid)));
+folder: omQP7IAQLxa0uKx5
+ownership:
+  default: 0
+  fd4dRrkazgKXBTwl: 3
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: dnd5e
+  systemVersion: 5.0.3
+  createdTime: 1750378935199
+  modifiedTime: 1758207704402
+  lastModifiedBy: xREoBzi7Iao0TR7B
+_id: pLurNNoo8XIwtVw6
+sort: 200000
+_key: '!macros!pLurNNoo8XIwtVw6'

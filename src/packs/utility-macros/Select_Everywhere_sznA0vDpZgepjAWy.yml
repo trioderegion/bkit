@@ -9,7 +9,7 @@ command: |-
   creatingStyle.sheet.insertRule(`.message * {
     user-select: text !important;
   }`);
-folder: null
+folder: omQP7IAQLxa0uKx5
 ownership:
   default: 0
   UkXd4NXnT5o2bQiL: 3
@@ -17,13 +17,13 @@ flags: {}
 _stats:
   compendiumSource: null
   duplicateSource: null
-  coreVersion: '12.331'
+  coreVersion: '13.348'
   systemId: dnd5e
   systemVersion: 4.0.4
   createdTime: 1728583106636
-  modifiedTime: 1728583106636
-  lastModifiedBy: UkXd4NXnT5o2bQiL
+  modifiedTime: 1758207767446
+  lastModifiedBy: xREoBzi7Iao0TR7B
+  exportSource: null
 _id: sznA0vDpZgepjAWy
-sort: 0
+sort: 1300000
 _key: '!macros!sznA0vDpZgepjAWy'
-

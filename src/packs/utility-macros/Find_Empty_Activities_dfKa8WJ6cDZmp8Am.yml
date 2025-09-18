@@ -20,7 +20,7 @@ command: >-
 
 
   found.forEach( d => fromUuid(d.uuid).then( doc => doc.sheet.render(true) ));
-folder: null
+folder: mT6GOFWzrSFU7Ifd
 ownership:
   default: 0
   UkXd4NXnT5o2bQiL: 3
@@ -28,13 +28,13 @@ flags: {}
 _stats:
   compendiumSource: null
   duplicateSource: null
-  coreVersion: '12.331'
+  coreVersion: '13.348'
   systemId: dnd5e
   systemVersion: 4.0.4
   createdTime: 1728322046722
-  modifiedTime: 1728322061077
-  lastModifiedBy: UkXd4NXnT5o2bQiL
+  modifiedTime: 1758207740924
+  lastModifiedBy: xREoBzi7Iao0TR7B
+  exportSource: null
 _id: dfKa8WJ6cDZmp8Am
-sort: 600000
+sort: 3400000
 _key: '!macros!dfKa8WJ6cDZmp8Am'
-

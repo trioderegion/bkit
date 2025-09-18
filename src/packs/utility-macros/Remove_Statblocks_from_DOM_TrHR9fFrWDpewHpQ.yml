@@ -1,0 +1,25 @@
+name: Remove Statblocks from DOM
+type: script
+command: >-
+  for (const node of document.querySelectorAll('.journal-entry .creature'))
+  node.remove();
+img: icons/svg/dice-target.svg
+author: xREoBzi7Iao0TR7B
+scope: global
+folder: mT6GOFWzrSFU7Ifd
+ownership:
+  default: 0
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  coreVersion: '13.348'
+  systemId: dnd5e
+  systemVersion: 4.2.0
+  createdTime: 1733353193331
+  modifiedTime: 1758207673736
+  lastModifiedBy: xREoBzi7Iao0TR7B
+  exportSource: null
+_id: TrHR9fFrWDpewHpQ
+sort: 1100000
+_key: '!macros!TrHR9fFrWDpewHpQ'

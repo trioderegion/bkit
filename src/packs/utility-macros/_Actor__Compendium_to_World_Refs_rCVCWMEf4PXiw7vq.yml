@@ -1,0 +1,62 @@
+name: '[Actor] Compendium to World Refs'
+type: script
+command: |-
+  const toWorld = game.actors.reduce( (db, actor) => {
+    const compuuid = foundry.utils.getProperty(actor, '_stats.compendiumSource');
+    const compname = fromUuidSync(compuuid)?.name;
+    if (compname == actor.name) {
+      const entry = db.has(compuuid) ? db.get(compuuid) : [];
+      entry.push(actor.uuid);
+      db.set(compuuid, entry);
+    }
+    return db;
+  }, new Map());
+
+  const overlaps = [...toWorld.values()].reduce( (c, ids) => {
+    if (ids.length > 1) {
+      console.log(ids);
+      ids.forEach( i => fromUuidSync(i).sheet.render(true))
+      c++;
+    }
+    return c;
+  }, 0);
+
+  if (overlaps > 0) return;
+
+  for (const journal of game.journal) {
+    for (const page of journal.pages) {
+      let newText;
+      for (const [compId, [worldId]] of toWorld) {
+        if (page.text.content.search(compId) >= 0) {
+          newText ??= page.text.content;
+          newText = newText.replaceAll(compId, worldId);
+        }
+      }
+
+      if (newText) {
+        ui.notifications.info(`Updating ${page.name} in ${page.parent.name}`);
+        await page.update({'text.content': newText});
+      }
+    }
+  }
+img: icons/svg/book.svg
+author: fd4dRrkazgKXBTwl
+scope: global
+folder: omQP7IAQLxa0uKx5
+ownership:
+  default: 0
+  fd4dRrkazgKXBTwl: 3
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: dnd5e
+  systemVersion: 5.0.3
+  createdTime: 1750357494381
+  modifiedTime: 1758207703055
+  lastModifiedBy: xREoBzi7Iao0TR7B
+_id: rCVCWMEf4PXiw7vq
+sort: 100000
+_key: '!macros!rCVCWMEf4PXiw7vq'

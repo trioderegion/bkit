@@ -1,0 +1,20 @@
+type: Macro
+folder: null
+name: dnd5e
+color: null
+sorting: a
+_id: mT6GOFWzrSFU7Ifd
+description: ''
+sort: 0
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: dnd5e
+  systemVersion: 5.1.8
+  createdTime: 1758207673722
+  modifiedTime: 1758207673722
+  lastModifiedBy: xREoBzi7Iao0TR7B
+_key: '!folders!mT6GOFWzrSFU7Ifd'

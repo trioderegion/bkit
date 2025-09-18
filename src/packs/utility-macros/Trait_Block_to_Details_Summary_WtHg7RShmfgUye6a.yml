@@ -1,0 +1,100 @@
+name: Trait Block to Details/Summary
+type: script
+command: |-
+  function getFormData( html ) {
+    const formElement = html[0].querySelector('form');
+    const formData = new FormDataExtended(formElement);
+    return formData.object;
+  }
+
+  const dialog = new Dialog({
+    title: "Magic Item Description Formatter",
+    content: `
+  <form>
+  <label for="lore">Lore HTML</label>
+  <textarea id="lore" name="lore" rows="5">
+  </textarea>
+  <label for="innate">Innate HTML</label>
+  <textarea id="innate" name="innate" rows="5">
+  </textarea>
+  <label for="text">Trait Block HTML</label>
+  <textarea id="text" name="text" rows="5">
+  </textarea>
+              </form>
+            `,
+    buttons: {
+      parse: {
+        label: "Convert",
+        callback: async ( html ) => {
+          const formData = getFormData(html);
+          let {lore, innate, text} = formData;
+          const newline = /\n/g;
+          const spaces = /\s+/g;
+          
+          lore = lore.replace(newline, '').replace(spaces, ' ');
+          innate = innate.replace(newline, '').replace(spaces, ' ');
+          text = text.replace(newline, '').replace(spaces, ' ');
+          text = text.replaceAll('<p> <strong>','<p><strong>');
+
+          const loreHtml = lore.trim().length > 0 ? `
+  <blockquote>${lore.trim()}</blockquote>
+  ` : '';
+          const innateHtml = innate.trim().length > 0 ? innate.trim() : '';
+          
+          const traitFrags = text.trim().length > 0 ? text.trim().split('<p><strong>') : [];
+  console.log(traitFrags, text.trim());
+          let detailsHtml = '';
+          if (traitFrags.length > 0) {
+          traitFrags.shift(); //discard empty leader
+          const traits = traitFrags.map( frag => {
+            const components = frag.split('</strong>');
+            const name = components.shift();
+            const description = '<p>'+components.join('</strong>').trim();
+            return {name, description};
+          });
+          
+          detailsHtml = traits.map( ({name, description}) => `
+  <details>
+  <summary><strong>${name}</strong></summary>
+  ${description}
+  </details>
+  ` ).join('');
+          }
+
+          const rendered = loreHtml + '\n' + innateHtml + '\n' + detailsHtml;
+
+          ChatMessage.create({
+           speaker: {alias: 'Rendered Result'},
+           content: rendered
+          });
+
+          navigator.clipboard.writeText(rendered);
+          ui.notifications.info('Converted HTML copied to clipboard.');
+          
+        }
+      }
+    },
+      default: 'parse',
+  });
+
+  dialog.render(true)
+img: icons/svg/lever.svg
+author: xREoBzi7Iao0TR7B
+scope: global
+folder: mT6GOFWzrSFU7Ifd
+ownership:
+  default: 0
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  coreVersion: '13.348'
+  systemId: dnd5e
+  systemVersion: 4.2.0
+  createdTime: 1733353167390
+  modifiedTime: 1758207673736
+  lastModifiedBy: xREoBzi7Iao0TR7B
+  exportSource: null
+_id: WtHg7RShmfgUye6a
+sort: 1800000
+_key: '!macros!WtHg7RShmfgUye6a'

@@ -1,0 +1,30 @@
+name: Open Template Feature
+type: script
+command: |-
+  const pack = game.packs.get('dnd-monster-manual.features');
+
+  const name = ui.activeWindow.document.name;
+
+  const index = await pack.getIndex();
+  const match = index.find( e => e.name === name );
+  if (match) fromUuid(match.uuid).then( d => d.sheet.render(true) );
+img: icons/svg/hanging-sign.svg
+author: xREoBzi7Iao0TR7B
+scope: global
+folder: omQP7IAQLxa0uKx5
+ownership:
+  default: 0
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  coreVersion: '13.348'
+  systemId: dnd5e
+  systemVersion: 4.4.0
+  createdTime: 1742850243746
+  modifiedTime: 1758207750179
+  lastModifiedBy: xREoBzi7Iao0TR7B
+  exportSource: null
+_id: 9oD3uyKqeyglEejh
+sort: 900000
+_key: '!macros!9oD3uyKqeyglEejh'

@@ -1,23 +1,25 @@
 name: Extract Actor
 type: script
-command: |-
-  window.bkit ??= {
-    MODULE_PREFIX: 'phb',
+command: >-
+  window.bkit = {
+    MODULE_PREFIX: 'hof',
     prefix: '',
     markers: {
-      name: '.creature-name',
-      score: '.single-score',
+      name: 'h2',
+      score: 'td',
       meta: '.meta',
     },
   };
 
+
   function modulePacks(documentClasses = ["Actor"]) {
-    const { packs } = game.modules.get("dnd-players-handbook");
+    const { packs } = game.modules.get("dnd-heroes-faerun");
     const ourPacks = packs
       .toObject()
       .filter((pack) => documentClasses.includes(pack.type));
     return ourPacks;
   }
+
 
   async function promptContext() {
     const ourPacks = modulePacks();
@@ -72,6 +74,7 @@ command: |-
     return response;
   }
 
+
   const getSelectionId = () => {
     const selection = window.getSelection();
 
@@ -106,107 +109,147 @@ command: |-
     return {range: fullRange};
   }
 
-  async function extractDocument() {
-    
-    const {range: fullRange = null} = getSelectionId();
-    const fragment = fullRange.cloneContents();
 
-    const wrapper = document.createElement("div");
-    wrapper.appendChild(fragment);
+  /***** MAIN *****/
 
-    const nameNode = wrapper.querySelector(window.bkit.markers.name);
+  const {range: fullRange = null} = getSelectionId();
 
-    if (!nameNode) {
-      ui.notifications.error(
-        "Could not identify valid creature name from selection"
-      );
-      return;
-    }
+  const fragment = fullRange.cloneContents();
 
-    const name = nameNode.textContent;
 
-    const scoreNodes = wrapper.querySelectorAll(window.bkit.markers.score);
+  const wrapper = document.createElement("div");
 
-    if (scoreNodes?.length == 0) {
-      ui.notifications.error(
-        "Could not identify valid creature ability scores from selection"
-      );
-      return;
-    }
+  wrapper.appendChild(fragment);
 
-    const scores = {};
-    const scoreRegex = /\s*(?<abil>(str|dex|con|int|wis|cha))\s*(?<score>\d+)/i
-    for (const score of scoreNodes) {
-      const result = scoreRegex.exec(score.textContent);
-      scores[result.groups.abil.toLowerCase()] = { value: Number(result.groups.score) };
-    }
 
-    let metaNode = wrapper.querySelector(window.bkit.markers.meta);
+  const nameNode = wrapper.querySelector(window.bkit.markers.name);
 
-    /* If not found, try using the line after the creature's name */
-    if (!metaNode) {
-      metaNode = nameNode.nextElementSibling;
-    }
 
-    const metaRegex = /\s*(?<size>\w+)(\s+or\s+\w+)?\s+(?<type>\w+)[^\w]+(?<align>\w+)/i
-    const metaResult = metaRegex.exec(metaNode.textContent);
-    const alignment = metaResult?.groups.align;
-    const size = Reflect.ownKeys(CONFIG.DND5E.actorSizes).find( key => CONFIG.DND5E.actorSizes[key].label == metaResult?.groups.size );
-    const creatureType = Reflect.ownKeys(CONFIG.DND5E.creatureTypes).find( key => CONFIG.DND5E.creatureTypes[key].label == metaResult?.groups.type);
-
-    const context = await promptContext();
-
-    if (!context) return;
-
-    /* if a non <p> is the remaining first child, its likely an inline item */
-    if (!['H1', 'H2', 'H3', 'P'].includes(wrapper.firstChild.nodeName)) {
-      const parawrapper = document.createElement("p");
-      parawrapper.replaceChildren(...wrapper.childNodes);
-      wrapper.replaceChildren(parawrapper);
-    }
-
-    const description = wrapper.innerHTML.trim();
-
-    const data = foundry.utils.expandObject({
-      name,
-      type: 'npc',
-      "system.details.biography.value": description,
-      "system.details.alignment": alignment,
-      "system.details.type.value": creatureType,
-      "system.abilities": scores,
-      "system.traits.size": size,
-      _id: dnd5e.utils.staticID(`${context.prefix}${name.slugify({lowercase: false, replacement: '', strict: true})}`),
-    });
-
-    const cls = context.docCls;
-    context.keepId = true;
-
-    delete context.docCls;
-    delete context.prefix;
-    //console.log(data, context);
-    await cls.create(data, context);
-
+  if (!nameNode) {
+    ui.notifications.error(
+      "Could not identify valid creature name from selection"
+    );
+    return;
   }
 
-  extractDocument();
+
+  const name = nameNode.textContent;
+
+
+  const scoreNodes = wrapper.querySelectorAll(window.bkit.markers.score) ?? [];
+
+
+  if (scoreNodes?.length == 0) {
+    ui.notifications.warn(
+      "Could not identify valid creature ability scores from selection -- using defaults!"
+    );
+  }
+
+
+  const scores = {};
+
+  const scoreRegex = /\s*(?<abil>(str|dex|con|int|wis|cha))\s*(?<score>\d+)/i
+
+  for (const score of scoreNodes) {
+    const result = scoreRegex.exec(score.textContent);
+    if (!result) continue;
+    scores[result.groups.abil.toLowerCase()] = { value: Number(result.groups.score) };
+  }
+
+
+  let metaNode = wrapper.querySelector(window.bkit.markers.meta);
+
+
+  /* If not found, try using the line after the creature's name */
+
+  if (!metaNode) {
+    metaNode = nameNode.nextElementSibling;
+  }
+
+
+  const metaRegex =
+  /\s*(?<size>\w+)(\s+or\s+\w+)?\s+(?<type>\w+)[^\w]+(?<align>\w+)/i
+
+  const metaResult = metaRegex.exec(metaNode.textContent);
+
+  const alignment = metaResult?.groups.align;
+
+  const size = Reflect.ownKeys(CONFIG.DND5E.actorSizes).find( key =>
+  CONFIG.DND5E.actorSizes[key].label == metaResult?.groups.size );
+
+  const creatureType = Reflect.ownKeys(CONFIG.DND5E.creatureTypes).find( key =>
+  CONFIG.DND5E.creatureTypes[key].label == metaResult?.groups.type);
+
+
+  const context = await promptContext();
+
+
+  if (!context) return;
+
+
+  /* if a non <p> is the remaining first child, its likely an inline item */
+
+  if (!['H1', 'H2', 'H3', 'P'].includes(wrapper.firstChild.nodeName)) {
+    const parawrapper = document.createElement("p");
+    parawrapper.replaceChildren(...wrapper.childNodes);
+    wrapper.replaceChildren(parawrapper);
+  }
+
+
+  const description = wrapper.innerHTML.trim();
+
+
+  const data = foundry.utils.expandObject({
+    name,
+    type: 'npc',
+    "system.details.biography.value": description,
+    "system.details.alignment": size && creatureType ? alignment : "Unaligned",
+    "system.details.type.value": creatureType,
+    "system.abilities": scores,
+    "system.traits.size": size,
+    _id: dnd5e.utils.staticID(`${context.prefix}${name.slugify({lowercase: false, replacement: '', strict: true})}`),
+  });
+
+
+  const putativeUUID = foundry.utils.buildUuid({id: data._id, documentName:
+  'Actor', ...context});
+
+  const exists = await fromUuid(putativeUUID);
+
+  if (exists) {
+    return ui.notifications.error(`[${putativeUUID}] Putative Actor UUID already exists in target collection!`)
+  }
+
+
+  const cls = context.docCls;
+
+  context.keepId = true;
+
+
+  delete context.docCls;
+
+  delete context.prefix;
+
+  //console.log(data, context);
+
+  await cls.create(data, context);
 img: icons/svg/thrust.svg
-author: UkXd4NXnT5o2bQiL
+author: xREoBzi7Iao0TR7B
 scope: global
-folder: null
+folder: mT6GOFWzrSFU7Ifd
 ownership:
   default: 0
-  UkXd4NXnT5o2bQiL: 3
 flags: {}
 _stats:
   compendiumSource: null
   duplicateSource: null
-  coreVersion: '12.331'
+  coreVersion: '13.348'
   systemId: dnd5e
   systemVersion: 4.0.4
   createdTime: 1728322035835
-  modifiedTime: 1728322061077
-  lastModifiedBy: UkXd4NXnT5o2bQiL
+  modifiedTime: 1758207673736
+  lastModifiedBy: xREoBzi7Iao0TR7B
+  exportSource: null
 _id: rptKSgOU3V7g3NFc
-sort: 1100000
+sort: 2900000
 _key: '!macros!rptKSgOU3V7g3NFc'
-

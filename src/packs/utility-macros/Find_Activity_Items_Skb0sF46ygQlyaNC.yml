@@ -34,7 +34,7 @@ command: |-
   }
 
   showResults(matches);
-folder: null
+folder: mT6GOFWzrSFU7Ifd
 ownership:
   default: 0
   UkXd4NXnT5o2bQiL: 3
@@ -42,13 +42,13 @@ flags: {}
 _stats:
   compendiumSource: null
   duplicateSource: null
-  coreVersion: '12.331'
+  coreVersion: '13.348'
   systemId: dnd5e
   systemVersion: 4.0.4
   createdTime: 1728322040530
-  modifiedTime: 1728322061077
-  lastModifiedBy: UkXd4NXnT5o2bQiL
+  modifiedTime: 1758207714842
+  lastModifiedBy: xREoBzi7Iao0TR7B
+  exportSource: null
 _id: Skb0sF46ygQlyaNC
-sort: 900000
+sort: 3100000
 _key: '!macros!Skb0sF46ygQlyaNC'
-

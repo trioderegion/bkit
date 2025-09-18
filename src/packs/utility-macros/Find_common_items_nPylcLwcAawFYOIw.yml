@@ -77,7 +77,7 @@ command: >-
 
 
   Hooks.off('getFilePickerHeaderButtons', fpHook);
-folder: null
+folder: mT6GOFWzrSFU7Ifd
 ownership:
   default: 0
   UkXd4NXnT5o2bQiL: 3
@@ -85,13 +85,13 @@ flags: {}
 _stats:
   compendiumSource: null
   duplicateSource: null
-  coreVersion: '12.331'
+  coreVersion: '13.348'
   systemId: dnd5e
   systemVersion: 4.0.4
   createdTime: 1728322042846
-  modifiedTime: 1728322061077
-  lastModifiedBy: UkXd4NXnT5o2bQiL
+  modifiedTime: 1758207716381
+  lastModifiedBy: xREoBzi7Iao0TR7B
+  exportSource: null
 _id: nPylcLwcAawFYOIw
-sort: 800000
+sort: 3200000
 _key: '!macros!nPylcLwcAawFYOIw'
-

@@ -1,289 +1,276 @@
 name: Extract Item
 type: script
-command: |-
-  window.bkit ??= {
-      MODULE_PREFIX: 'phb',
-      prefix: 'ft',
-    };
-    
-    class ItemExtractor extends Item.implementation {
-    
-      static async createDialog(data={}, { parent=null, pack=null, types=null, keepId=false, ...options }={}) {
-        types ??= game.documentTypes[this.documentName].filter(t => (t !== CONST.BASE_DOCUMENT_TYPE) && (t !== "backpack"));
-        if ( !types.length ) return null;
-        const collection = parent ? null : pack ? game.packs.get(pack) : game.collections.get(this.documentName);
-        const folders = collection?._formatFolderSelectOptions() ?? [];
-        const label = game.i18n.localize(this.metadata.label);
-        const title = game.i18n.format("DOCUMENT.Create", { type: label });
-        const name = data.name || game.i18n.format("DOCUMENT.New", { type: label });
-        let type = data.type || CONFIG[this.documentName]?.defaultType;
-        if ( !types.includes(type) ) type = types[0];
-        const content = await renderTemplate("systems/dnd5e/templates/apps/document-create.hbs", {
-          folders, name, type,
-          folder: data.folder,
-          hasFolders: folders.length > 0,
-          types: types.reduce((arr, type) => {
-            const label = CONFIG[this.documentName]?.typeLabels?.[type] ?? type;
-            arr.push({
-              type,
-              label: game.i18n.has(label) ? game.i18n.localize(label) : type,
-              icon: this.getDefaultArtwork({ type })?.img ?? "icons/svg/item-bag.svg"
-            });
-            return arr;
-          }, []).sort((a, b) => a.label.localeCompare(b.label, game.i18n.lang))
-        });
-        return Dialog.prompt({
-          title, content,
-          label: title,
-          render: html => {
-            const app = html.closest(".app");
-            const folder = app.querySelector("select");
-            if ( folder ) app.querySelector(".dialog-buttons").insertAdjacentElement("afterbegin", folder);
-            app.querySelectorAll(".window-header .header-button").forEach(btn => {
-              const label = btn.innerText;
-              const icon = btn.querySelector("i");
-              btn.innerHTML = icon.outerHTML;
-              btn.dataset.tooltip = label;
-              btn.setAttribute("aria-label", label);
-            });
-            app.querySelector(".document-name").select();
-          },
-          callback: html => {
-            const form = html.querySelector("form");
-            const fd = new FormDataExtended(form);
-            const createData = foundry.utils.mergeObject(data, fd.object, { inplace: false });
-            if ( !createData.folder ) delete createData.folder;
-            if ( !createData.name?.trim() ) createData.name = this.defaultName();
-            return this.create(createData, { parent, pack, renderSheet: true, keepId: true });
-          },
-          rejectClose: false,
-          options: { ...options, jQuery: false, width: 350, classes: ["dnd5e2", "create-document", "dialog"] }
-        });
-      }
+command: >-
+  class ItemExtractor extends Item.implementation {
+    static async create(data = {}, operation = {}) {
+      operation.keepId = true;
+      return super.create(data, operation);
     }
-    
-    function modulePacks(documentClasses = ["Item"]) {
-      const { packs } = game.modules.get("dnd-players-handbook");
-      const ourPacks = packs
-        .toObject()
-        .filter((pack) => documentClasses.includes(pack.type));
-      return ourPacks;
-    }
-    
-    async function promptContext() {
-      const ourPacks = modulePacks();
-    
-      const defaultButtons = {
-        item: {
-          label: "World Item",
-          callback: (html) => {
-            const input = html[0].querySelector('#tlprefix');
-            window.bkit.prefix = input.value;
-            return {
-              docCls: Item.implementation,
-              prefix: `${window.bkit.MODULE_PREFIX}${input.value}`,
-              pack: null,
-              parent: null,
-            }
-          }
-        },
-        cancel: { label: "Cancel", callback: () => null },
-      };
-    
-      let buttons = ourPacks.reduce((acc, info) => {
-        acc[info.name] = {
-          label: info.label,
-          callback: (html) => {
-            const input = html[0].querySelector('#tlprefix');
-            window.bkit.prefix = input.value;
-            return {
-              docCls: ItemExtractor,
-              prefix: `${window.bkit.MODULE_PREFIX}${input.value}`,
-              pack: info.id,
-              parent: null,
-            }
-          },
-        };
-    
-        return acc;
-      }, {});
+  }
 
-    
-      
-      const openActors = Object.values(ui.windows).filter( app => app.document?.documentName == 'Actor' );
-      buttons = openActors.reduce( (acc, app) => {
-        acc[app.document.uuid] = {
-          label: `Actor: ${app.document.name}`,
-          callback: (html) => {
-            const input = html[0].querySelector('#tlprefix');
-            window.bkit.prefix = input.value;
-            return {
-              docCls: ItemExtractor,
-              prefix: `${window.bkit.MODULE_PREFIX}${input.value}`,
-              pack: null,
-              parent: app.document,
-            }
-          }}
-       
-        return acc;
-      }, buttons);
-    
-        Reflect.ownKeys(defaultButtons).forEach(
-        (id) => (buttons[id] = defaultButtons[id])
-      );
 
-      const response = Dialog.wait(
-        {
-          title: "Add to Compendium or Actor",
-          content: `<p><input id="tlprefix" type="text" placeholder="3-letter Prefix" value="${window.bkit.prefix}"></p>`,
-          default: "cancel",
-          buttons,
-        },
-        { classes: ["flexcol"] }
-      );
+  function unlockedPacks() {
+    const packs = game.packs.filter( p => !p.config.locked && p.metadata.type === "Item").map(p => p.metadata);
+    return packs;
+  }
+
+
+  async function promptContext(options = {}) {
     
-      return response;
+    const targets = {
+      'WORLD': 'World',
     }
     
-    const getSelectionId = () => {
-      const selection = window.getSelection();
+    const ourPacks = unlockedPacks();
+    const openActors = Array.from(foundry.applications.instances.values()).filter( app => app.document?.documentName == 'Actor' );
     
-      if (selection.type !== "Range") {
-        ui.notifications.error("No Range selected for document extraction!");
-        return;
-      }
+    ourPacks.forEach(info => targets['PACK|'+info.id] = `${info.label} (${info.packageName})`);
+    openActors.forEach(app => targets['ACTOR|'+app.document.uuid] = app.document.name);
     
-      /* get 'top' and 'bottom' ordered */
-      if (selection.anchorOffset > selection.extentOffset) {
-        ui.notifications.warn("Please select top to bottom.");
-        return;
-      }
+    const fields = [
+      new foundry.data.fields.StringField({label: 'Item Prefix'}).toFormGroup({}, {name: 'ITEM_PREFIX', value: options.ITEM_PREFIX }).outerHTML,
+      new foundry.data.fields.StringField({label: 'Target Collection'}).toFormGroup({}, {name: 'TARGET', value: options.TARGET, choices: targets }).outerHTML,
+    ]
     
-      selection.modify("extend", "right", "lineboundary");
-    
-      const initialRange = selection.getRangeAt(0);
-      const start =
-        initialRange.commonAncestorContainer.nodeName == "P"
-        ? initialRange.commonAncestorContainer
-        : selection.anchorNode.parentElement;
-    
-      selection.setBaseAndExtent(
-        start,
-        0,
-        selection.extentNode,
-        selection.extentOffset
-      );
-    
-      const fullRange = selection.getRangeAt(0);
-    
-      return {range: fullRange};
+    const content = `<fieldset>${fields.join('')}</fieldset>`;
+
+    const answer = await foundry.applications.api.DialogV2.prompt({
+      content,
+      title: 'Static Item Identifiers',
+      ok: {
+        callback: (event,button) => new FormDataExtended(button.form).object
+      },
+      position: {top: 100},
+      rejectClose: true
+    });
+
+    return foundry.utils.mergeObject(options, answer);
+  }
+
+
+  const getSelectionId = () => {
+    const selection = window.getSelection();
+
+    if (selection.type !== "Range") {
+      ui.notifications.error("No Range selected for document extraction!");
+      return;
     }
-    
-    async function extractDocument() {
-      
-      const {range: fullRange = null} = getSelectionId();
-      const fragment = fullRange.cloneContents();
-    
-      const wrapper = document.createElement("div");
-      wrapper.appendChild(fragment);
-    
-      /* try to figure out where the name of the document lives */
-      const nameFromChildren = (childNodes) => {
-        while (childNodes.length > 0) {
-          const node = childNodes[0];
-          let nodeText = "";
-    
-          if (node.hasChildNodes()) {
-            nodeText = nameFromChildren(node.childNodes);
-            if (!node.hasChildNodes()) node.remove();
-          } else {
-            /* trim name of whitespace and remove any trailing punctuation */
-            nodeText = node.textContent.trim().replace(/[^\w\d\)]\.*$/, "");
-            node.remove();
-          }
-    
-          if (nodeText.length > 0) {
-            return nodeText;
-          }
-        }
-      };
-    
-      let name = nameFromChildren(wrapper.childNodes);
-      const priceRegex = /\s*\((?<value>\d+) (?<denomination>[PGESC]P)\)/
-      const result = priceRegex.exec(name);
-    
-      let price = {
-        value: '0',
-        denomination: 'gp',  
-      };
-    
-      if (result) {
-        name = name.substring(0, result.index).trim();
-        price.value = result.groups.value;
-        price.denomination = result.groups.denomination.toLowerCase();
-      }
-    
-      if (name.length < 1) {
-        ui.notifications.error(
-          "Could not identify valid document name from selection"
-        );
-        return;
-      }
-    
-      const context = await promptContext();
-    
-      if (!context) return;
-    
-      /* if a non <p> is the remaining first child, its likely an inline item */
-      if (!['H1', 'H2', 'H3', 'P'].includes(wrapper.firstChild.nodeName)) {
-        const parawrapper = document.createElement("p");
-        parawrapper.replaceChildren(...wrapper.childNodes);
-        wrapper.replaceChildren(parawrapper);
-      }
-    
-      const description = wrapper.innerHTML.trim();
-    
-      const data = foundry.utils.expandObject({
-        name,
-        "system.description.value": description,
-        "system.price": price,
-        _id: dnd5e.utils.staticID(`${context.prefix}${name.slugify({lowercase: false, replacement: '', strict: true})}`),
-      });
-    
-      Hooks.once("renderDialog", (_, html) => {
-        const nameInput = html[0].querySelector('form [name="name"]');
-        nameInput.value = name;
-      });
-    
-      const cls = context.docCls;
-      context.keepId = true;
-    
-      delete context.docCls;
-      delete context.prefix;
-    
-      await cls.createDialog(data, context);
-    
+
+    /* get 'top' and 'bottom' ordered */
+    if (selection.anchorOffset > selection.extentOffset) {
+      ui.notifications.warn("Please select top to bottom.");
+      return;
     }
-    
-    extractDocument();
+
+    selection.modify("extend", "right", "lineboundary");
+
+    const initialRange = selection.getRangeAt(0);
+    const start =
+      initialRange.commonAncestorContainer.nodeName == "P"
+      ? initialRange.commonAncestorContainer
+      : selection.anchorNode.parentElement;
+
+    selection.setBaseAndExtent(
+      start,
+      0,
+      selection.extentNode,
+      selection.extentOffset
+    );
+
+    const fullRange = selection.getRangeAt(0);
+
+    return {range: fullRange};
+  }
+
+
+  /****** MAIN ********/
+
+  const {range: fullRange = null} = getSelectionId();
+
+  const fragment = fullRange.cloneContents();
+
+
+  const wrapper = document.createElement("div");
+
+  wrapper.appendChild(fragment);
+
+
+  /* try to figure out where the name of the document lives */
+
+  const nameFromChildren = (childNodes) => {
+    while (childNodes.length > 0) {
+      const node = childNodes[0];
+      let nodeText = "";
+
+      if (node.hasChildNodes()) {
+        nodeText = nameFromChildren(node.childNodes);
+        if (!node.hasChildNodes()) node.remove();
+      } else {
+        /* trim name of whitespace and remove any trailing punctuation */
+        nodeText = node.textContent.trim().replace(/[^\w\d\)]\.*$/, "");
+        node.remove();
+      }
+
+      if (nodeText.length > 0) {
+        return nodeText;
+      }
+    }
+  };
+
+
+  let name = nameFromChildren(wrapper.childNodes);
+
+  const caption = name;
+
+  name = name.replace('’', "'");
+
+  const priceRegex = /\s*\((?<value>\d*,?\d+) (?<denomination>[PGESC]P)\)/
+
+  const result = priceRegex.exec(name);
+
+
+  let price = {
+    value: '0',
+    denomination: 'gp',  
+  };
+
+
+  if (result) {
+    name = name.substring(0, result.index).trim();
+    price.value = result.groups.value.replace(',', '');
+    price.denomination = result.groups.denomination.toLowerCase();
+  }
+
+
+  if (name.length < 1) {
+    ui.notifications.error(
+      "Could not identify valid document name from selection"
+    );
+    return;
+  }
+
+
+  const defaults = game.user.getFlag('world', 'bkit');
+
+  const answer = await promptContext(defaults);
+
+  if (!answer) return;
+
+
+  /* if a non <p> is the remaining first child, its likely an inline item */
+
+  if (!['H1', 'H2', 'H3', 'P'].includes(wrapper.firstChild.nodeName)) {
+    const parawrapper = document.createElement("p");
+    parawrapper.replaceChildren(...wrapper.childNodes);
+    wrapper.replaceChildren(parawrapper);
+  }
+
+
+  let description = wrapper.innerHTML.trim();
+
+  /* move parenthetical uses into item description */
+
+  const paraRegex = /\((?<use>[\w\d\s]+)\)\./;
+
+  const paraResult = paraRegex.exec(name);
+
+  if (paraResult) {
+    name = name.substring(0, result.index).trim();
+    description = `<p><strong>${result.groups.use}</strong></p>` + description;
+  }
+
+
+  /* Class features often lead with "Level N:" */
+
+  let itemLevel;
+
+  const levelRegex = /level\s(?<level>\d\d?)\:?/i
+
+  const levelResult = levelRegex.exec(name);
+
+  if (levelResult) {
+    name = levelResult.input.replace(levelResult[0], "").trim();
+    itemLevel = Number(levelResult.groups.level);
+  }
+
+
+  /* Creation Data */  
+
+  const data = foundry.utils.expandObject({
+    _id: dnd5e.utils.staticID(`${answer.ITEM_PREFIX}${name.slugify({lowercase: false, replacement: '', strict: true})}`),
+    type: answer.ITEM_TYPE ?? 'feat',
+    folder: answer.ITEM_FOLDER,
+    name,
+    "system.description.value": description,
+    "system.price": price,
+    "system.prerequisites.level": itemLevel,
+  });
+
+
+  /* Creation Context */
+
+  const context = {pack: null, parent: null};
+
+  const targetParts = answer.TARGET.split('|');
+
+  let exists = false;
+
+  switch(targetParts.at(0)) {
+    case 'WORLD': 
+      exists = game.items.has(data._id);
+      break;
+    case 'PACK': 
+      context.pack = targetParts.at(1);
+      exists = game.packs.get(context.pack).index.has(data._id);
+      break;
+    case 'ACTOR': 
+      context.parent = await fromUuid(targetParts.at(1));
+      exists = context.parent.items.has(data._id);
+      break;
+  }
+
+
+  if (exists) {
+   ui.notifications.error('Requested ID already exists!');
+   return;
+  }
+
+
+  const item = await ItemExtractor.createDialog(data, context);
+
+  const embedText = `@Embed[${item.uuid} classes="caption-top
+  item-card"]{${caption}}`;
+
+  navigator.clipboard.writeText(embedText);
+
+  ui.notifications.info(`"${embedText}" written to clipboard.`);
+
+  answer.ITEM_TYPE = item.type;
+
+  answer.ITEM_FOLDER = item.folder?.id;
+
+  await game.user.setFlag('world', 'bkit', answer);
 img: icons/svg/item-bag.svg
-author: UkXd4NXnT5o2bQiL
+author: xREoBzi7Iao0TR7B
 scope: global
-folder: null
+folder: mT6GOFWzrSFU7Ifd
 ownership:
   default: 0
-  UkXd4NXnT5o2bQiL: 3
-flags: {}
+flags:
+  world:
+    bkit:
+      ITEM_PREFIX: hofWiw
+      TARGET: PACK|dnd-heroes-faerun.options
 _stats:
   compendiumSource: null
   duplicateSource: null
-  coreVersion: '12.331'
+  coreVersion: '13.348'
   systemId: dnd5e
   systemVersion: 4.0.4
   createdTime: 1728322037856
-  modifiedTime: 1728322061077
-  lastModifiedBy: UkXd4NXnT5o2bQiL
+  modifiedTime: 1758207673736
+  lastModifiedBy: xREoBzi7Iao0TR7B
+  exportSource: null
 _id: KiY8RREAQY2OB6JX
-sort: 700000
+sort: 2500000
 _key: '!macros!KiY8RREAQY2OB6JX'
-

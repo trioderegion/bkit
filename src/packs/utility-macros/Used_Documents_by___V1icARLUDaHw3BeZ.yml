@@ -1,0 +1,154 @@
+name: Used Documents by ?
+type: script
+author: xREoBzi7Iao0TR7B
+img: icons/svg/waterfall.svg
+scope: global
+command: >-
+  globalThis._lastDocGrouping ??= {
+    first: 'folder.name',
+    second: 'doc.documentName'
+  }
+
+
+  const fields = [
+    new foundry.data.fields.StringField({label: 'First by:'}).toFormGroup({}, {name: 'first', value: globalThis._lastDocGrouping.first }).outerHTML,
+    new foundry.data.fields.StringField({label: 'Then by:'}).toFormGroup({}, {name: 'second', value: globalThis._lastDocGrouping.second}).outerHTML,
+  ]
+
+
+  const content = `<p>Provided scope: doc, page, journal,
+  folder.</p><fieldset>${fields.join('')}</fieldset>`;
+
+
+  const answer = await foundry.applications.api.DialogV2.prompt({
+    content,
+    window: {title: 'Collate journal references by field',},
+    ok: {
+      callback: (event,button) => new foundry.applications.ux.FormDataExtended(button.form).object
+    },
+    position: {top: 100},
+    rejectClose: true});
+
+  const {first = null, second = null} = answer;
+
+  globalThis._lastDocGrouping = {first, second};
+
+
+  if (!first) return;
+
+
+  const references = [];
+
+  const seenTables = new Set();
+
+  for (const journal of game.journal) {
+    if (journal.folder.name.startsWith('_')) continue;
+    for (const page of journal.pages) {
+      const re = /(?:@Embed|@UUID)\[([a-zA-Z0-9\.\-]*)\W/g;
+      let result;
+      while (result = re.exec(page.text.content)) {
+        const ref = {
+          doc: await fromUuid(result.at(1), {relative: page}),
+          page,
+          journal: journal,
+          folder: journal.folder,
+        }
+        references.push(ref)
+
+        if (ref.doc?.constructor.documentName == 'RollTable' && ref.doc.pack == 'hos-monkeydm.tables' && !seenTables.has(ref.doc.uuid)) {
+          seenTables.add(ref.doc.uuid);
+          const tableText = ref.doc.results.contents.map( r => r.documentUuid ? `@UUID[${r.documentUuid}] ${r.description}` : r.description);
+          const re2 = /(?:@Embed|@UUID)\[([a-zA-Z0-9\.\-]*)\W/g;
+          let result2;
+          while (result2 = re2.exec(tableText)) {
+            const ref2 = {
+              doc: await fromUuid(result2.at(1), {relative: ref.doc}),
+              page,
+              journal: journal,
+              folder: journal.folder,
+            }
+            references.push(ref2);
+          }
+        }   
+      }
+    }
+  }
+
+
+  for (const scene of game.scenes) {
+    const baseActors = new Set();
+    scene.tokens.forEach(t => baseActors.add(t.baseActor?.uuid));
+
+    for (const actorUUID of baseActors) {
+      references.push({
+        doc: await fromUuid(actorUUID),
+        page: scene.journalEntryPage ? await fromUuid(`${scene.journal?.uuid}.JournalEntryPage.${scene.journalEntryPage}`) : scene.journal,
+        journal: scene.journal,
+        folder: scene.folder,
+      })
+    }
+    
+  }
+
+
+  const adventures = Object.groupBy(references, (r) =>
+  foundry.utils.getProperty(r, first));
+
+  let html = '';
+
+  for (const [folderName, entries] of Object.entries(adventures)) {
+    if (!folderName) continue;
+    html += `<h3>${folderName}</h3>`;
+    console.log(entries, second);
+    const types = second ? Object.groupBy(entries, (r) => foundry.utils.getProperty(r, second)) : { '*': entries };
+    for (const [typeName, results] of Object.entries(types)) {
+      
+      const deduped = Map.groupBy(results, ({doc}) => doc);
+      
+      const resultLinks = [...deduped.entries()].map( ([doc, matches]) => {
+        const seen = [...new Set(matches.map( r => r.page))].map(page => page?.toAnchor().outerHTML);
+        const adv = [...new Set(matches.map(r => r.folder))].map(folder => folder?.name ?? 'No Folder');
+        return `<li>${doc?.toAnchor().outerHTML} — ${seen.join(', ')}` + ((first == 'folder.name' || second == 'folder.name') ? '' : ` <em>(${Array.from(new Set(adv)).join(', ')})</em></li>`);
+      });
+      
+      html += `${second? '<h4>' + typeName + '</h4>' : ''}
+      <ol>
+      ${resultLinks.join('')}
+      </ol>`;
+    }
+
+    html += '<hr>';
+  }
+
+
+  html = '<div style="max-height: 80vh;overflow-y:scroll;">' + html + '</div>';
+
+
+  foundry.applications.api.DialogV2.prompt({
+    window: {
+      resizable: true,
+    },
+    rejectClose: false,
+    content: html,
+    ok: {
+        label: 'Close',
+      }
+  });
+folder: omQP7IAQLxa0uKx5
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: dnd5e
+  systemVersion: 5.1.8
+  createdTime: 1758207673748
+  modifiedTime: 1758207782911
+  lastModifiedBy: xREoBzi7Iao0TR7B
+ownership:
+  default: 0
+  xREoBzi7Iao0TR7B: 3
+_id: V1icARLUDaHw3BeZ
+sort: 6250
+_key: '!macros!V1icARLUDaHw3BeZ'

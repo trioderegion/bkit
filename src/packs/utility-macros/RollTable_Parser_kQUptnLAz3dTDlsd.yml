@@ -1,0 +1,118 @@
+name: RollTable Parser
+type: script
+author: xREoBzi7Iao0TR7B
+img: systems/dnd5e/icons/svg/dice/d20.svg
+scope: global
+command: |-
+  const targetPack = 'dnd-heroes-faerun.tables';
+  const idPrefix = 'hof';
+
+  function getFormData( html ) {
+    const formElement = html[0].querySelector('form');
+    const formData = new FormDataExtended(formElement);
+    return formData.object;
+  }
+
+  function parseRange(range = '') {
+    let [lower, upper] = range.split('–').flatMap(p => p.split('-'));
+    if (lower == '00') lower = '100';
+    if (upper == '00') upper = '100';
+    upper ??= lower;
+    console.log(upper, lower);
+    lower = Number(lower);
+    upper = Number(upper);
+
+    if (isNaN(lower) || isNaN(upper)) {
+      return [NaN, NaN]
+    }
+
+    return [lower, upper];
+  }
+
+  function createEntry(range, value) {
+            const parsedRange = parseRange(range);
+            return {
+              type: 0,
+              text: value,
+              range: parsedRange,
+            };
+  }
+
+  new Dialog({
+    title: "RollTable Parser",
+    content: `
+  <form>
+  <label for="text">Table Text</label>
+  <textarea id="text" name="text" rows="5">
+  </textarea>
+              </form>
+            `,
+    buttons: {
+      parse: {
+        label: "Parse",
+        callback: async ( html ) => {
+          const formData = getFormData(html);
+          let {text} = formData;
+          text = text.trim();
+
+          const lines = text.split('\n').filter(e => !!e);
+
+          const name = lines.shift().trim().replace('’', "'").replace().replace('“','"').replace('”', '"');
+          const id = dnd5e.utils.staticID(idPrefix + name.slugify({replacement:'', lowercase: false, strict: true}));
+          if (game.tables.has(id)) return ui.notifications.error('Table ID exists already! ' + id);
+
+          const formula = lines.shift();
+          const resultLabel = lines.shift();
+
+          const rawPairs = [];
+          while (lines.length) {
+            const range = lines.shift();
+            const resultLines = []
+            do {
+              resultLines.push(lines.shift());
+              
+            } while ( parseRange(lines.at(0)).some(isNaN))
+
+            const text = resultLines.length > 1 ? '<p>' + resultLines.join('</p><p>') + '</p>' : resultLines.at(0);
+            
+            rawPairs.push([range, text]);
+          }
+          
+          const results = rawPairs.map( ([range, value]) => createEntry(range, value) );
+          
+          const data = {_id: id, name, results, formula };
+
+          const exists = targetPack ? game.packs.get(targetPack).index.has(data._id) : game.items.has(data._id);
+          if (exists) {
+           ui.notifications.error('Requested ID already exists!');
+           return;
+          }
+          
+          await RollTable.create(data, {pack: targetPack, keepId: true}).then( table => {
+            table.sheet.render(true);
+            navigator.clipboard.writeText(`@Embed[${table.uuid} rollable classes="caption-top" resultLabel="${resultLabel}"]{${name}}`);
+          });
+
+        }
+      }
+    },
+      default: 'parse',
+  }).render(true)
+folder: omQP7IAQLxa0uKx5
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: dnd5e
+  systemVersion: 5.1.8
+  createdTime: 1758207673748
+  modifiedTime: 1758207765728
+  lastModifiedBy: xREoBzi7Iao0TR7B
+ownership:
+  default: 0
+  xREoBzi7Iao0TR7B: 3
+_id: kQUptnLAz3dTDlsd
+sort: 12500
+_key: '!macros!kQUptnLAz3dTDlsd'

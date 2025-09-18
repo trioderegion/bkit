@@ -1,0 +1,29 @@
+name: Copy Activity ID
+type: script
+command: |-
+  const id = ui.activeWindow?.activity?.id;
+
+  if (!id) return ui.notifications.error('No activity sheet active');
+
+  navigator.clipboard.writeText(id);
+  ui.notifications.info(`Activity ID [${id}] copied to clipboard.`);
+img: icons/svg/heal.svg
+author: xREoBzi7Iao0TR7B
+scope: global
+folder: mT6GOFWzrSFU7Ifd
+ownership:
+  default: 0
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  coreVersion: '13.348'
+  systemId: dnd5e
+  systemVersion: 4.2.0
+  createdTime: 1736190373032
+  modifiedTime: 1758207673736
+  lastModifiedBy: xREoBzi7Iao0TR7B
+  exportSource: null
+_id: C0KEQghgS6L2sXbn
+sort: 1300000
+_key: '!macros!C0KEQghgS6L2sXbn'

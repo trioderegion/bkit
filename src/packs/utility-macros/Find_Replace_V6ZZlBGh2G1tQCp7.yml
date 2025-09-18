@@ -1,0 +1,48 @@
+name: Find/Replace
+type: script
+command: >-
+  const page = await
+  fromUuid('JournalEntry.SZuRJrWJhIpFx7i8.JournalEntryPage.CgW4ZLk4lagZxO0F');
+
+
+  const termhtml = new foundry.data.fields.StringField({label: 'Search
+  term'}).toFormGroup({}, {name: 'term', }).outerHTML;
+
+
+  const replacehtml = new foundry.data.fields.StringField({label: 'Replacement
+  term'}).toFormGroup({}, {name: 'replace', }).outerHTML;
+
+
+  const answer = await foundry.applications.api.DialogV2.prompt({content:
+  termhtml+replacehtml,   ok: {
+      callback: (event,button) => new FormDataExtended(button.form).object
+    },
+    rejectClose: true})
+
+  const {term, replace} = answer;
+
+
+  const updated = page.text.content.replaceAll(term, replace);
+
+  await page.update({'text.content': updated})
+img: icons/svg/dice-target.svg
+author: xREoBzi7Iao0TR7B
+scope: global
+folder: omQP7IAQLxa0uKx5
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: dnd5e
+  systemVersion: 5.1.8
+  createdTime: 1758207673748
+  modifiedTime: 1758207743678
+  lastModifiedBy: xREoBzi7Iao0TR7B
+ownership:
+  default: 0
+  xREoBzi7Iao0TR7B: 3
+_id: V6ZZlBGh2G1tQCp7
+sort: 150000
+_key: '!macros!V6ZZlBGh2G1tQCp7'

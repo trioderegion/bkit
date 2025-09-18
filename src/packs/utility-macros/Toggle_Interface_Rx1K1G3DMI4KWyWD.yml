@@ -1,0 +1,26 @@
+name: Toggle Interface
+type: script
+command: |-
+  const inter = document.querySelector('#interface');
+  const toggle = inter.style.display === 'none' ? '' : 'none';
+  inter.style.display = toggle;
+img: icons/svg/dice-target.svg
+author: xREoBzi7Iao0TR7B
+scope: global
+folder: omQP7IAQLxa0uKx5
+ownership:
+  default: 0
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  coreVersion: '13.348'
+  systemId: dnd5e
+  systemVersion: 4.4.0
+  createdTime: 1742850238124
+  modifiedTime: 1758207789392
+  lastModifiedBy: xREoBzi7Iao0TR7B
+  exportSource: null
+_id: Rx1K1G3DMI4KWyWD
+sort: 1500000
+_key: '!macros!Rx1K1G3DMI4KWyWD'

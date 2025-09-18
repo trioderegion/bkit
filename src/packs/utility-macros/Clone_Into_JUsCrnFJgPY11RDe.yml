@@ -1,0 +1,55 @@
+name: Clone Into
+type: script
+command: |-
+  const fields = [
+    new foundry.data.fields.DocumentUUIDField({label: 'From'}).toFormGroup({}, {name: 'source', }).outerHTML,
+    new foundry.data.fields.DocumentUUIDField({label: 'To'}).toFormGroup({}, {name: 'target', }).outerHTML,
+  ]
+
+  const {target, source} = await foundry.applications.api.DialogV2.prompt({
+    content: `<fieldset>${fields.join('')}</fieldset>`,
+    window: {title: 'Clone Document Into',},
+    ok: {
+      callback: (event,button) => new FormDataExtended(button.form).object
+    },
+    position: {top: 100},
+    rejectClose: false,
+  })
+
+  const sItem = await fromUuid(source);
+  const tItem = await fromUuid(target);
+
+  const data = sItem.toObject();
+
+  delete data._stats;
+  delete data._id;
+
+  for (const activity of (tItem.system?.activities ?? [])) {
+    await activity.delete();
+  }
+
+  for (const effect of (tItem.effects ?? [])) {
+    await effect.delete();
+  }
+
+  await tItem.update(data);
+img: icons/svg/lightning.svg
+author: xREoBzi7Iao0TR7B
+scope: global
+folder: omQP7IAQLxa0uKx5
+ownership:
+  default: 0
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  coreVersion: '13.348'
+  systemId: dnd5e
+  systemVersion: 4.2.0
+  createdTime: 1736190378197
+  modifiedTime: 1758207709568
+  lastModifiedBy: xREoBzi7Iao0TR7B
+  exportSource: null
+_id: JUsCrnFJgPY11RDe
+sort: 500000
+_key: '!macros!JUsCrnFJgPY11RDe'

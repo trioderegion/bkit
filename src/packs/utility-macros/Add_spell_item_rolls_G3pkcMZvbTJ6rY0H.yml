@@ -1,0 +1,49 @@
+name: Add spell item rolls
+type: script
+command: |-
+  const casting = ui.activeWindow.document;
+
+  const actor = casting.parent;
+  const spells = actor.items.filter( i => i.type === 'spell' );
+
+  const spellbook = spells.reduce( (book, i) => {
+    const level = i.system.chatProperties[0].toLowerCase().capitalize();
+    if (level in book) book[level].push(i.id);
+    else book[level] = [i.id];
+
+    return book;
+  }, {});
+
+  const lines = Object.entries(spellbook).map( ([level, ids], idx) => {
+    ids.sort( (a, b) => actor.items.get(a).name.localeCompare(actor.items.get(b).name) );
+    const links = ids.map( id => `[[/item .${id}]]{${actor.items.get(id).name.toLowerCase()}}` );
+    const slots = idx == 0 ? 'at will' : actor.system.spells['spell'+idx].max + ' slots';
+    const line = `${level} (${slots}): ${links.join(', ')}`;
+    return line;
+  });
+
+  const content = `<p>${lines.join('</p><p>')}</p>`
+
+  const newDesc = casting.system.description.value + content;
+  await casting.update({'system.description.value': newDesc});
+img: icons/svg/dice-target.svg
+author: X5WUKTayOn7nnnpA
+scope: global
+folder: mT6GOFWzrSFU7Ifd
+ownership:
+  default: 0
+  X5WUKTayOn7nnnpA: 3
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  coreVersion: '13.348'
+  systemId: dnd5e
+  systemVersion: 4.3.8
+  createdTime: 1745344014907
+  modifiedTime: 1758207688259
+  lastModifiedBy: xREoBzi7Iao0TR7B
+  exportSource: null
+_id: G3pkcMZvbTJ6rY0H
+sort: 3000000
+_key: '!macros!G3pkcMZvbTJ6rY0H'

@@ -1,0 +1,25 @@
+name: Split on Headers
+type: script
+command: "const fields = [\n  new foundry.data.fields.DocumentUUIDField({label: 'Page to Split'}).toFormGroup({}, {name: 'pageuuid', }).outerHTML,\n  new foundry.data.fields.DocumentUUIDField({label: 'Target Journal'}).toFormGroup({}, {name: 'targetuuid', }).outerHTML,\n  new foundry.data.fields.NumberField({label: 'Split to Header'}).toFormGroup({}, {name: 'level'}).outerHTML,\n  new foundry.data.fields.BooleanField({label: 'Create as Location'}).toFormGroup({}, {name: 'location'}).outerHTML,\n  new foundry.data.fields.BooleanField({label: 'Create as Mission'}).toFormGroup({}, {name: 'rule'}).outerHTML,\n\n]\n\nconst content = `<fieldset>${fields.join('')}</fieldset>`;\n\nconst answer = await foundry.applications.api.DialogV2.prompt({\n  content,\n  title: 'Split Page by Headers',\n  ok: {\n    callback: (event,button) => new FormDataExtended(button.form).object\n  },\n  position: {top: 100},\n  rejectClose: true})\n\nconst {pageuuid, targetuuid, level, location, rule} = answer;\n\nconst targetHeaders = Array.from({ length: level }, (v, i) => `h${i + 1}`);\nconst elementToSplitOn = `:is(${targetHeaders.join(',')})`\n\nconst page = await fromUuid(pageuuid);\nconst journal = await fromUuid(targetuuid);\n\nfunction nextUntil(elem, selector, filter) {\n\n\t// matches() polyfill\n\tif (!Element.prototype.matches) {\n\t\tElement.prototype.matches = Element.prototype.msMatchesSelector || Element.prototype.webkitMatchesSelector;\n\t}\n\n\t// Setup siblings array\n\tvar siblings = [];\n\n\t// Get the next sibling element\n\telem = elem.nextElementSibling;\n\n\t// As long as a sibling exists\n\twhile (elem) {\n\n\t\t// If we've reached our match, bail\n\t\tif (elem.matches(selector)) break;\n\n\t\t// If filtering by a selector, check if the sibling matches\n\t\tif (filter && !elem.matches(filter)) {\n\t\t\telem = elem.nextElementSibling;\n\t\t\tcontinue;\n\t\t}\n\n\t\t// Otherwise, push it to the siblings array\n\t\tsiblings.push(elem);\n\n\t\t// Get the next sibling element\n\t\telem = elem.nextElementSibling;\n\n\t}\n\n\treturn siblings;\n\n};\n\nconst div = document.createElement(\"div\");\ndiv.innerHTML = page.text.content;\nconst headings = div.querySelectorAll(elementToSplitOn);\nconst pageData = [];\n\nfor (const heading of headings) {\n    let siblings = nextUntil(heading, elementToSplitOn);\n    let pageHTML = \"\";\n    for (const sibling of siblings) {\n        pageHTML += sibling.outerHTML;\n    }\n    pageData.push({type: location ? 'map' : rule ? 'rule' : 'text',  name: heading.innerText, \"text.content\": pageHTML, \"title.level\": heading.tagName.at(1), \"system.type\": \"sgehMission\"});\n    \n}\nawait journal.createEmbeddedDocuments(\"JournalEntryPage\", pageData);"
+img: icons/svg/mole.svg
+author: fd4dRrkazgKXBTwl
+scope: global
+folder: omQP7IAQLxa0uKx5
+ownership:
+  default: 0
+  X5WUKTayOn7nnnpA: 3
+  fd4dRrkazgKXBTwl: 3
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: dnd5e
+  systemVersion: 5.0.3
+  createdTime: 1750357227614
+  modifiedTime: 1758207786742
+  lastModifiedBy: xREoBzi7Iao0TR7B
+_id: 2X0jH5pRPYQbN1WT
+sort: 3125
+_key: '!macros!2X0jH5pRPYQbN1WT'

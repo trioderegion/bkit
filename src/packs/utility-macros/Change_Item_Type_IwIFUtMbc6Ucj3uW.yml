@@ -1,0 +1,52 @@
+name: Change Item Type
+type: script
+command: |-
+  const fields = [
+    new foundry.data.fields.StringField({label: 'Target UUID'}).toFormGroup({}, {name: 'target', }).outerHTML,
+    new foundry.data.fields.StringField({label: 'New Type'}).toFormGroup({}, {name: 'type', }).outerHTML,
+  ]
+
+  const content = `<fieldset>${fields.join('')}</fieldset>`;
+
+  const answer = await foundry.applications.api.DialogV2.prompt({
+    content,
+    title: 'Item Type Change',
+    ok: {
+      callback: (event,button) => new FormDataExtended(button.form).object
+    },
+    position: {top: 100},
+    rejectClose: true})
+
+  const {target, type} = answer;
+
+
+  const item = await fromUuid(target);
+  const data = item.toObject();
+  data['==system'] = data.system;
+  delete data.system;
+  data.type = type;
+  try {
+    await item.update(data);
+  } catch (e) {
+    console.log(e);
+  }
+img: icons/svg/card-hand.svg
+author: xREoBzi7Iao0TR7B
+scope: global
+folder: omQP7IAQLxa0uKx5
+ownership:
+  default: 0
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  coreVersion: '13.348'
+  systemId: dnd5e
+  systemVersion: 4.2.0
+  createdTime: 1736190376303
+  modifiedTime: 1758207705801
+  lastModifiedBy: xREoBzi7Iao0TR7B
+  exportSource: null
+_id: IwIFUtMbc6Ucj3uW
+sort: 300000
+_key: '!macros!IwIFUtMbc6Ucj3uW'

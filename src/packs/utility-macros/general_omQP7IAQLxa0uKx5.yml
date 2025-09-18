@@ -1,0 +1,20 @@
+type: Macro
+folder: null
+name: general
+color: null
+sorting: a
+_id: omQP7IAQLxa0uKx5
+description: ''
+sort: 0
+flags: {}
+_stats:
+  compendiumSource: null
+  duplicateSource: null
+  exportSource: null
+  coreVersion: '13.348'
+  systemId: dnd5e
+  systemVersion: 5.1.8
+  createdTime: 1758207699787
+  modifiedTime: 1758207699787
+  lastModifiedBy: xREoBzi7Iao0TR7B
+_key: '!folders!omQP7IAQLxa0uKx5'

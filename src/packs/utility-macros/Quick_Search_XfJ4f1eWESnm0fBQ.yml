@@ -31,23 +31,22 @@ command: |-
   }
   })
 img: icons/svg/eye.svg
-author: UkXd4NXnT5o2bQiL
+author: xREoBzi7Iao0TR7B
 scope: global
-folder: null
+folder: omQP7IAQLxa0uKx5
 ownership:
   default: 0
-  UkXd4NXnT5o2bQiL: 3
 flags: {}
 _stats:
   compendiumSource: null
   duplicateSource: null
-  coreVersion: '12.331'
+  coreVersion: '13.348'
   systemId: dnd5e
   systemVersion: 4.0.4
   createdTime: 1728580758040
-  modifiedTime: 1728580758040
-  lastModifiedBy: UkXd4NXnT5o2bQiL
+  modifiedTime: 1758207755648
+  lastModifiedBy: xREoBzi7Iao0TR7B
+  exportSource: null
 _id: XfJ4f1eWESnm0fBQ
-sort: 0
+sort: 1000000
 _key: '!macros!XfJ4f1eWESnm0fBQ'
-
