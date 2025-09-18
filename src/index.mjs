@@ -1,11 +1,23 @@
-import './styles/main.scss';
+import './common';
 
-Hooks.on("renderItemSheet5e", (app) => //app.activateTab("activities", {triggerCallback: true}));
-app.changeTab('activities', 'primary'));
 Hooks.on('setup', () => {
   console.log('FCCT Loaded');
  });
 
-//Hooks.on("preCreateActor", assignRulesVersion);
-//Hooks.on("preCreateItem", assignRulesVersion);
+Hooks.once('ready', async () => {
+
+  const systemInit = () => ui.notifications.success(`Common and '${game.system.id}' utilities initialized`);
+
+  switch (game.system.id) {
+    case 'dnd5e': 
+      await import('./systems/dnd5e');
+      systemInit();
+      break;
+    default:
+      ui.notifications.info('Common utilities initialized');
+      break;
+
+  }
+
+});
 

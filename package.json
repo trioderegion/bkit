@@ -19,5 +19,8 @@
   "homepage": "https://github.com/trioderegion/fcct#readme",
   "dependencies": {
     "rollup-config-badger-den": "^1.7.1"
+  },
+  "devDependencies": {
+    "@alenaksu/json-viewer": "^2.1.2"
   }
 }

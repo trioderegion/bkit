@@ -73,25 +73,17 @@
   }
 }
 
-.active-effect-sheet {
-  
-  .window-header,
-  .window-content {
-    width: 700px;
-  }
+.active-effect-config {
   
   .editor {
     height: 300px;
   }
 
-  .changes-list .effect-change {
-    .key,
-    .mode {
-      flex-basis: min-content; 
-    }
+  .changes .key {
+    grid-column: 1 / -1;
+  }
 
-    .value {
-      flex-basis:auto;
-    }
+  .changes [data-changes] {
+    grid-template-columns: repeat(4, auto);
   }
 }

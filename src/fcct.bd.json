@@ -5,6 +5,7 @@
   "projectUrl": "",
   "entryPoints": {
     "main": "index.mjs",
+    "external": ["./common/lib/index.js"],
     "compendia": {
       "path": "packs/*/",
       "type": {
@@ -30,8 +31,8 @@
   },
   "dependencies": {
     "core": [
-      "12",
-      "12"
+      "13",
+      "13"
     ]
   },
   "storage": true,
