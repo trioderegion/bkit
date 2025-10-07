@@ -1,15 +1,15 @@
 {
-  "name": "fcct",
+  "name": "bkit",
   "version": "1.0.0",
   "description": "",
   "main": "index.mjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "rollup -c node:rollup-config-badger-den --config-den src/fcct:dev"
+    "dev": "rollup -c node:rollup-config-badger-den --config-den src/bkit:dev"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/trioderegion/fcct.git"
+    "url": "git+https://github.com/trioderegion/bkit.git"
   },
   "author": "",
   "license": "UNLICENSED",

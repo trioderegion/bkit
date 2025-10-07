@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "title": "Foundry Content Creation Tools",
+  "title": "Badger Kit: Content Creation Toolkit",
   "description": "",
   "projectUrl": "",
   "entryPoints": {
@@ -15,7 +15,7 @@
         "utility-macros": "Utility macros"
       },
       "folder": {
-        "label": "Content Tools",
+        "label": "Badger Kit",
         "color": "#aa0033"
       }
     }

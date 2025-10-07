@@ -25,7 +25,7 @@ export default class DataView extends foundry.applications.api.ApplicationV2 {
         onClick: () => new this({
           document: app.options.document
         }).render({force: true}),
-        visible: function() { return this.options.document },
+        visible: () => app.options.document,
       });
     });
   }

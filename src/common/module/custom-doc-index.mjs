@@ -17,7 +17,7 @@ export default class CustomDocIndex {
     function indexWorldCollection(documentName) {
       const packages = game.settings.get('%id%', 'docIndexPackages');
       if (packages.has('world'))
-        _indexWorldCollection(game.documentIndex, documentName);
+        _indexWorldCollection.call(game.documentIndex, documentName);
     }
 
     game.documentIndex._indexCompendium = indexCompendium;
@@ -43,8 +43,10 @@ export default class CustomDocIndex {
         ),
         default: packages,
         onChange: _ => {
+          Object.keys(game.documentIndex.trees).forEach( tree => delete game.documentIndex.trees[tree] );
+          Object.keys(game.documentIndex.uuids).forEach( uuid => delete game.documentIndex.uuids[uuid] );
           game.documentIndex.index().then( _ => {
-            ui.notifications.info('Document Index updated.');
+            ui.notifications.info('Document Index replaced.');
           });
         }
       });
