@@ -14,9 +14,9 @@
   "author": "",
   "license": "UNLICENSED",
   "bugs": {
-    "url": "https://github.com/trioderegion/fcct/issues"
+    "url": "https://github.com/trioderegion/bkit/issues"
   },
-  "homepage": "https://github.com/trioderegion/fcct#readme",
+  "homepage": "https://github.com/trioderegion/bkit#readme",
   "dependencies": {
     "rollup-config-badger-den": "^1.7.1"
   },
