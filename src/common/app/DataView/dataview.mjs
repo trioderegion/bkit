@@ -51,6 +51,16 @@ export default class DataView extends foundry.applications.api.ApplicationV2 {
     return options;
   }
 
+  async _onFirstRender(context, options) {
+    if ('apps' in (options.document ?? {})) options.document.apps[this.id] = this;
+    return super._onFirstRender(context, options);
+  }
+
+  _onClose(options) {
+    if ('apps' in (this.options.document ?? {})) delete this.options.document.apps[this.id];
+    return super._onClose(options);
+  }
+
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
     const {system, flags, ...core} = this.options.document.toObject();
