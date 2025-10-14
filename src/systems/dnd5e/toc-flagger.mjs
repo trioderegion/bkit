@@ -1,8 +1,31 @@
-class ToCEntryData extends foundry.abstract.DataModel {
+class FlagData extends foundry.abstract.DataModel {
+  static get scope() {
+    return 'dnd5e';
+  }
+
+  static get inner() {
+    return '';
+  }
+
+  static get flagPath() {
+    return `flags.${this.scope}${this.inner}`;
+  }
+
+  read(doc) {
+    return foundry.utils.getProperty(doc, this.constructor.flagPath);
+  }
+
+  updateFrom(doc) {
+    return this.updateSource(this.read(doc));
+  }
+}
+
+
+class ToCEntryData extends FlagData {
   static defineSchema() {
     const fields = foundry.data.fields;
     return {
-      title: new fields.StringField({required: false, label: 'Custom Title'}),
+      title: new fields.StringField({required: false, label: 'Custom Title', nullable: true}),
       type: new fields.StringField({required: false, label: 'Type', choices: {
         chapter: 'Chapter',
         appendix: 'Appendix',
@@ -15,9 +38,15 @@ class ToCEntryData extends foundry.abstract.DataModel {
       order: new fields.NumberField({required: false, label: 'Sort Order*', positive: true, integer: true, initial: undefined}),
     };
   }
+
+  static cleanData(source = {}, options = {}) {
+    const data = super.cleanData(source, options);
+    data.title = !!data.title ? data.title : null;
+    return data;
+  }
 }
 
-class ToCPageData extends foundry.abstract.DataModel {
+class ToCPageData extends FlagData {
 
   static defineSchema() {
     const fields = foundry.data.fields;
@@ -27,9 +56,22 @@ class ToCPageData extends foundry.abstract.DataModel {
   }
 }
 
+class NavData extends FlagData {
+  static defineSchema() {
+    const fields = foundry.data.fields;
+    return {
+      previous: new fields.DocumentIdField({required: false, readonly: false, initial: undefined, label: 'Previous (ID)'}),
+      next: new fields.DocumentIdField({required: false, readonly: false, initial: undefined, label: 'Next (ID)'}),
+      up: new fields.DocumentIdField({required: false, readonly: false, initial: undefined, label: 'Up (ID)'})
+    }
+  }
 
-export default class ToCFlagger extends foundry.applications.api.ApplicationV2 {
+  static get inner() {
+    return '.navigation';
+  }
+}
 
+export default class Flagger extends foundry.applications.api.ApplicationV2 {
   static DEFAULT_OPTIONS = {
     tag: 'form',
     classes: ['standard-form'],
@@ -40,63 +82,66 @@ export default class ToCFlagger extends foundry.applications.api.ApplicationV2 {
     }
   }
 
-  static {
+  static APP_CONTROLS = {
+    icon: 'fa-table-columns',
+    label: 'Configure Flags',
+  }
+
+  static hook() {
     Hooks.on('getHeaderControlsApplicationV2', (app, controls) => {
       controls.push({
-        icon: 'fa-solid fa-table-columns',
-        label: 'Configure ToC',
+        icon: `fa-solid ${this.APP_CONTROLS.icon}`,
+        label: this.APP_CONTROLS.label,
         onClick: () => new this({
           document: app.options.document
         }).render({force: true}),
-        visible: () => app.options.document?.documentName.includes('JournalEntry'),
+        visible: () => this.compatible(app.options.document),
       });
     });
   }
 
-  _initializeApplicationOptions(options) {
-    options = super._initializeApplicationOptions(options);
-    options.window.title = `ToC Flagging ${options.document.documentName}: ${options.document.name}`;
-    return options;
+  static compatible(doc) {
+    return !!doc?.id;
   }
-  
-  
-  get isPage() {
-    return this.options.document.documentName === 'JournalEntryPage';
-  }
+
+  flagData = null;
 
   get document() {
     return this.options.document;
   }
 
-  tocData = null;
-
-  constructor(options) {
+  constructor(flagModel, options) {
     super(options);
 
-    this.tocData = this.isPage ? new ToCPageData() : new ToCEntryData();
-    this.tocData.updateSource(foundry.utils.getProperty(this.document, 'flags.dnd5e'));
+    this.flagData = new flagModel();
+    this.flagData.updateFrom(this.document);
   }
 
-  async submitHandler(evt, form, data) {
-    const combinedData = data.object;
-
-    if ('title' in combinedData) {
-      combinedData.title = !!combinedData.title ? combinedData.title : null;
-    }
-
-    this.tocData.updateSource(combinedData);
-    await this.document.update({'flags.dnd5e': this.tocData.toObject()});
+  _initializeApplicationOptions(options) {
+    options = super._initializeApplicationOptions(options);
+    options.window.title = `Flagging ${options.document.documentName}: ${options.document.name}`;
+    return options;
   }
 
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
-
-    context.entries = Object.keys(this.tocData.schema.fields).map( field => ({
-      field: this.tocData.schema.fields[field],
-      value: this.document.getFlag('dnd5e', field),
+    this.flagData.updateFrom(this.document);
+    context.entries = Object.entries(this.flagData.schema.fields).map( ([key, field]) => ({
+      field,
+      value: this.flagData[key],
     }));
 
     return context;
+  }
+
+  _ingestSubmit(update) {
+    return update;
+  }
+
+  async submitHandler(evt, form, data) {
+    const updateData = this._ingestSubmit(data.object);
+    this.flagData.updateSource(updateData);
+    await this.document.update({[this.flagData.constructor.flagPath]: this.flagData.toObject()});
   }
 
   async _renderHTML(context, options) {
@@ -114,5 +159,45 @@ export default class ToCFlagger extends foundry.applications.api.ApplicationV2 {
     const footer = elements.pop();
     content.replaceChildren(...elements);
     content.insertAdjacentHTML('beforeend', footer);
+  }
+}
+
+class ToCFlagger extends Flagger {
+
+  static APP_CONTROLS = {
+    icon: 'fa-table-columns',
+    label: 'ToC Flags',
+  }
+
+  static {
+    this.hook();
+  }
+
+  static compatible(doc) {
+    return super.compatible(doc) && (doc?.documentName.includes('JournalEntry') ?? false);
+  }
+
+  constructor(options) {
+    const model = options.document?.documentName === 'JournalEntryPage' ? ToCPageData : ToCEntryData;
+    super(model, options);
+  }
+}
+
+class NavFlagger extends Flagger {
+  static APP_CONTROLS = {
+    icon: 'fa-compass',
+    label: 'Nav Flags',
+  }
+
+  static compatible(doc) {
+    return super.compatible(doc) && (doc.documentName == 'JournalEntry')
+  }
+
+  static {
+    this.hook();
+  }
+
+  constructor(options) {
+    super(NavData, options);
   }
 }

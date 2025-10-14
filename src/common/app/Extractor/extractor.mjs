@@ -451,7 +451,7 @@ class ItemExtractor extends CONFIG.Item.documentClass {
     const embedText = `@Embed[${item.uuid} classes="caption-top item-card"]{${caption}}`;
     navigator.clipboard.writeText(embedText);
     ui.notifications.info(`"${embedText}" written to clipboard.`);
-    await game.user.setFlag('%id%', 'item-extractor', {type: item.type, folder: item.folder?.id});
+    await game.user.setFlag('%id%', 'Item-extractor', {type: item.type, folder: item.folder?.id});
   }
 }
 
