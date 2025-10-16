@@ -1,4 +1,4 @@
-.application.dnd5e2.sheet.item {
+.taboo.item {
 	min-width: min-content;
 	& .window-content {
 
@@ -55,7 +55,7 @@
 	}
 }
 
-.application.dnd5e2.activity.sheet {
+.taboo.activity {
   min-width:fit-content;
   .window-content {
     display: grid;
@@ -79,11 +79,17 @@
     height: 300px;
   }
 
+  .changes {
+    gap: 0;
+  }
+
   .changes .key {
+    margin-block-start: 0.5em;
     grid-column: 1 / -1;
   }
 
   .changes [data-changes] {
-    grid-template-columns: repeat(4, auto);
+    grid-template-columns: max-content auto 6ch 3ch;
+    gap: 0.2em;
   }
 }

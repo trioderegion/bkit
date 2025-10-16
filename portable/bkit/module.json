@@ -1,0 +1,45 @@
+{
+  "id": "bkit",
+  "title": "Badger Kit: Content Creation Toolkit",
+  "version": "2.0.0",
+  "description": "",
+  "authors": [
+    {
+      "name": "trioderegion",
+      "url": "https://www.github.com/trioderegion"
+    }
+  ],
+  "url": "",
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13"
+  },
+  "relationships": {
+    "systems": [],
+    "requires": []
+  },
+  "persistentStorage": false,
+  "socket": false,
+  "manifest": "",
+  "download": "",
+  "flags": {
+    "hotReload": {
+      "extensions": [
+        "css",
+        "html",
+        "hbs",
+        "json"
+      ]
+    }
+  },
+  "esmodules": [
+    "index.mjs"
+  ],
+  "styles": [
+    "bkit.css"
+  ],
+  "languages": [],
+  "packs": [],
+  "packFolders": [],
+  "documentTypes": {}
+}

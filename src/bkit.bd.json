@@ -1,32 +1,46 @@
 {
-  "version": "1.0.0",
+  "version": "2.0.0",
   "title": "Badger Kit: Content Creation Toolkit",
   "description": "",
   "projectUrl": "",
   "entryPoints": {
     "main": "index.mjs",
-    "external": ["./common/lib/index.js"],
-    "compendia": {
-      "path": "packs/*/",
-      "type": {
-        "utility-macros": "Macro"
-      },
-      "label": {
-        "utility-macros": "Utility macros"
-      },
-      "folder": {
-        "label": "Badger Kit",
-        "color": "#aa0033"
-      }
-    }
+    "external": [
+      "./common/lib/index.js"
+    ]
   },
   "profile": {
-    "dev":{
-      "dest":"../build",
-      "compress":false,
+    "dev": {
+      "dest": "../build",
+      "compress": false,
       "sourcemaps": true,
       "clean": false,
-      "hmr": true
+      "hmr": true,
+      "entryPoints": {
+        "compendia": {
+          "path": "packs/*/",
+          "type": {
+            "utility-macros": "Macro"
+          },
+          "label": {
+            "utility-macros": "Utility macros"
+          },
+          "folder": {
+            "label": "Badger Kit",
+            "color": "#aa0033"
+          }
+        }
+      }
+    },
+    "portable": {
+      "dest": "../portable",
+      "compress": true,
+      "sourcemaps": true,
+      "clean": true,
+      "hmr": true,
+      "package": {
+        "create": true
+      }
     }
   },
   "dependencies": {
@@ -35,9 +49,8 @@
       "13"
     ]
   },
-  "storage": true,
-  "static": [
-  ],
+  "storage": false,
+  "static": [],
   "authors": [
     {
       "name": "trioderegion",

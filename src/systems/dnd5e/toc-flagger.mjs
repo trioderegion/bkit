@@ -74,17 +74,20 @@ class NavData extends FlagData {
 export default class Flagger extends foundry.applications.api.ApplicationV2 {
   static DEFAULT_OPTIONS = {
     tag: 'form',
-    classes: ['standard-form'],
     form: {
       submitOnChange: false,
       closeOnSubmit: true,
       handler: this.prototype.submitHandler,
+    },
+    window: {
+      contentClasses: ['standard-form']
     }
   }
 
   static APP_CONTROLS = {
     icon: 'fa-table-columns',
     label: 'Configure Flags',
+    field: '',
   }
 
   static hook() {
@@ -148,11 +151,13 @@ export default class Flagger extends foundry.applications.api.ApplicationV2 {
     const buttons = await foundry.applications.handlebars.renderTemplate("templates/generic/form-footer.hbs", {buttons: [{type: 'submit', label: 'Submit'}]});
 
     /* Render entry inputs */ 
-    const entryInputs = context.entries.map( data => data.field.toFormGroup({}, {value: data.value}) );
+    const fieldset = document.createElement('fieldset');
+    const legend = document.createElement('legend');
+    legend.innerText = this.constructor.APP_CONTROLS.field;
+    fieldset.appendChild(legend);
+    context.entries.forEach( data => fieldset.appendChild(data.field.toFormGroup({}, {value: data.value})) );
 
-    entryInputs.push(buttons);
-
-    return entryInputs;
+    return [fieldset, buttons];
   }
 
   _replaceHTML(elements, content, options) {
@@ -167,6 +172,7 @@ class ToCFlagger extends Flagger {
   static APP_CONTROLS = {
     icon: 'fa-table-columns',
     label: 'ToC Flags',
+    field: 'Table of Contents',
   }
 
   static {
@@ -187,6 +193,7 @@ class NavFlagger extends Flagger {
   static APP_CONTROLS = {
     icon: 'fa-compass',
     label: 'Nav Flags',
+    field: 'Navigation',
   }
 
   static compatible(doc) {
