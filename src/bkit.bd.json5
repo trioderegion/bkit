@@ -1,12 +1,12 @@
 {
-  "version": "2.0.0",
+  "version": "2.1.1",
   "title": "Badger Kit: Content Creation Toolkit",
-  "description": "",
-  "projectUrl": "",
+  "description": "By badgers; for badgers.",
+  "projectUrl": "https://github.com/trioderegion/bkit",
   "entryPoints": {
     "main": "index.mjs",
     "external": [
-      "./common/lib/index.js"
+      "./common/lib/index.js", "./systems/**/index.js", "common/lib/abstract/*.mjs"
     ]
   },
   "profile": {
@@ -40,6 +40,15 @@
       "hmr": true,
       "package": {
         "create": true
+      }
+    },
+    release: {
+      dest: "../dist",
+      compress: true,
+      sourcemaps: true,
+      clean: true,
+      package: {
+        create: true,
       }
     }
   },

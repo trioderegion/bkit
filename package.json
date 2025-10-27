@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "rollup -c node:rollup-config-badger-den --config-den src/bkit:dev",
-    "portable": "rollup -c node:rollup-config-badger-den --config-den src/bkit:portable"
+    "portable": "rollup -c node:rollup-config-badger-den --config-den src/bkit:portable",
+    "release": "rollup -c node:rollup-config-badger-den --config-den src/bkit:release"
   },
   "repository": {
     "type": "git",
@@ -19,7 +20,7 @@
   },
   "homepage": "https://github.com/trioderegion/bkit#readme",
   "dependencies": {
-    "rollup-config-badger-den": "^1.7.1"
+    "rollup-config-badger-den": "1.x"
   },
   "devDependencies": {
     "@alenaksu/json-viewer": "^2.1.2"

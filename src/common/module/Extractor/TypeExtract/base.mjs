@@ -1,14 +1,20 @@
 export default class ExtractorBase {
+
+  get documentName() {
+    throw new TypeError('Child class of ExtractorBase requires "documentName" defined');
+    return null;
+  }
+
   genID(name, prefix = '') {
     const id = `${prefix}${name.slugify({lowercase: false, replacement: '', strict: true})}`;
     if (id.length >= 16) return id.substring(0, 16);
-    return id.padEnd(16, 'F');
+    return id.padEnd(16, foundry.utils.randomID());
   }
 
-  async validateTarget({id, type, target}) {
+  async validateTarget({id, type = this.documentName, target}) {
 
     /* Creation Context */
-    const context = {pack: null, parent: null};
+    const context = {pack: null, parent: null, keepId: true};
     const targetParts = target.split('|');
     switch (targetParts.at(0)) {
       case 'PACK':
@@ -44,7 +50,7 @@ export default class ExtractorBase {
     return [lower, upper];
   }
 
-  async promptContext(type = 'Item', options = {}) {
+  async promptContext(type = this.documentName, options = {}) {
     options = foundry.utils.mergeObject(game.user.getFlag('%id%', `${type}-extractor`) ?? {}, options);
 
     const targets = {
@@ -58,7 +64,8 @@ export default class ExtractorBase {
     openSheets.forEach(doc => targets['SHEET|' + doc.uuid] = doc.name);
 
     const fields = [
-      new foundry.data.fields.StringField({label: 'Document Prefix'}).toFormGroup({}, {name: 'prefix', value: options.prefix}).outerHTML,
+      new foundry.data.fields.StringField({label: 'ID Prefix'}).toFormGroup({}, {name: 'prefix', value: options.prefix}).outerHTML,
+      new foundry.data.fields.StringField({label: 'Document Name'}).toFormGroup({}, {name: 'name', value: options.name}).outerHTML,
       new foundry.data.fields.StringField({label: 'Target Collection'}).toFormGroup({}, {name: 'target', value: options.target ?? 'WORLD', choices: targets}).outerHTML,
     ]
 
@@ -80,12 +87,12 @@ export default class ExtractorBase {
   }
 
 
-  unlockedPacks(type = 'Item') {
-    const packs = game.packs.filter(p => !p.config.locked && p.metadata.type === type).map(p => p.metadata);
+  unlockedPacks(type = this.documentName) {
+    const packs = game.packs.filter(p => !p.locked && p.metadata.type === type).map(p => p.metadata);
     return packs;
   }
 
-  openSheets(type = 'Item') {
+  openSheets(type = this.documentName) {
     const collectionField = CONFIG[type].documentClass.metadata.collection;
     if (!collectionField) return [];
     return Array.from(foundry.applications.instances.values())

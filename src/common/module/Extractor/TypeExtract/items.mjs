@@ -22,6 +22,10 @@ export default class ItemExtractor extends ExtractorBase {
     })
   }
 
+  get documentName() {
+    return 'Item';
+  }
+
   nameFromChildren(childNodes) {
     while (childNodes.length > 0) {
       const node = childNodes[0];
@@ -67,24 +71,8 @@ export default class ItemExtractor extends ExtractorBase {
       price.denomination = result.groups.denomination.toLowerCase();
     }
 
-    if (name.length < 1) {
-      ui.notifications.error(
-        "Could not identify valid document name from selection"
-      );
-      return;
-    }
-
-    const answer = await this.promptContext('Item');
-    if (!answer) return;
-
-    /* if a non <p> is the remaining first child, its likely an inline item */
-    if (!['H1', 'H2', 'H3', 'P'].includes(wrapper.firstChild.nodeName)) {
-      const parawrapper = document.createElement("p");
-      parawrapper.replaceChildren(...wrapper.childNodes);
-      wrapper.replaceChildren(parawrapper);
-    }
-
     let description = wrapper.innerHTML.trim();
+    description = description.startsWith('.') ? description.substring(1).trim() : description;
     /* move parenthetical uses into item description */
     const paraRegex = /\((?<use>[\w\d\s]+)\)\./;
     const paraResult = paraRegex.exec(name);
@@ -102,12 +90,30 @@ export default class ItemExtractor extends ExtractorBase {
       itemLevel = Number(levelResult.groups.level);
     }
 
+
+    if (name.length < 1) {
+      ui.notifications.warning(
+        "Could not identify putative document name from selection"
+      );
+      return;
+    }
+
+    const answer = await this.promptContext('Item', {name});
+    if (!answer) return;
+
+    /* if a non <p> is the remaining first child, its likely an inline item */
+    if (!['H1', 'H2', 'H3', 'P'].includes(wrapper.firstChild.nodeName)) {
+      const parawrapper = document.createElement("p");
+      parawrapper.replaceChildren(...wrapper.childNodes);
+      wrapper.replaceChildren(parawrapper);
+    }
+    
     /* Creation Data */
     const data = foundry.utils.expandObject({
-      _id: this.genID(name, answer.prefix),
+      _id: this.genID(answer.name, answer.prefix),
       type: answer.type ?? 'feat',
       folder: answer.folder,
-      name,
+      name: answer.name,
       "system.description.value": description,
       "system.price": price,
       "system.prerequisites.level": itemLevel,

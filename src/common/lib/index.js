@@ -1,1 +1,1 @@
-import '@alenaksu/json-viewer';
+import './json-viewer.mjs'

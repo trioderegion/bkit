@@ -16,6 +16,10 @@ export default class PageSplitter extends ExtractorBase {
     });
   }
 
+  get documentName() {
+    return 'JournalEntryPage';
+  }
+
   async split({pageuuid = null, targetuuid = null, level = null, type = 'text'}) {
     const fields = [
       new foundry.data.fields.StringField({label: 'Page to Split'}).toFormGroup({}, {name: 'pageuuid', value: pageuuid}).outerHTML,
@@ -96,11 +100,15 @@ export default class PageSplitter extends ExtractorBase {
       for (const sibling of siblings) {
         pageHTML += sibling.outerHTML;
       }
-      pageData.push({type, name: heading.innerText ?? '(No Title)', "text.content": pageHTML, "title.level": heading.tagName.at(1)});
+
+      const name = heading.innerText ?? '(No Title)';
+      const _id = this.genID(name);
+      this.validateTarget({id: _id, type: this.documentName, target: targetuuid}); 
+      pageData.push({_id, type, name, "text.content": pageHTML, "title.level": heading.tagName.at(1)});
 
     }
 
-    await journal.createEmbeddedDocuments("JournalEntryPage", pageData);
+    await journal.createEmbeddedDocuments("JournalEntryPage", pageData, {keepId: true});
   }
 }
 

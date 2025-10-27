@@ -17,8 +17,9 @@ export default class DevSheet5e {
     });
 
     Hooks.on("renderItemSheet5e", (app, /** @type HTMLElement */ frame) => {
-      frame.classList.toggle('taboo', game.settings.get('%id%', 'taboo'));
-      if (app.constructor.itemHasActivities(app.document)) {
+      const enabled = game.settings.get('%id%', 'taboo');
+      frame.classList.toggle('taboo', enabled);
+      if (enabled && app.constructor.itemHasActivities(app.document)) {
         app.changeTab('activities', 'primary');
       }
     })

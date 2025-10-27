@@ -1,5 +1,14 @@
 import ExtractorBase from './base.mjs';
 
+class KeepIdTable extends CONFIG.RollTable.documentClass {
+  static async create(data = {}, operation = {}) {
+    operation.keepId = true;
+    return super.create(data, operation);
+  }
+
+  static get implementation() {return this};
+}
+
 export default class TableExtractor extends ExtractorBase {
 
   static {
@@ -40,12 +49,19 @@ export default class TableExtractor extends ExtractorBase {
     this.lines = this._extract();
   }
 
+  get documentName() {
+    return 'RollTable';
+  }
+
   async parse() {
-    const answers = await this.promptContext('RollTable');
     const lines = foundry.utils.duplicate(this.lines);
-    const name = lines.shift().trim().replace('’', "'").replace().replace('“', '"').replace('”', '"');
-    const id = this.genID(name, answers.prefix);
-    await this.validateTarget({id, type: 'RollTable', target: answers.target});
+    const firstLine = lines.shift().replace('’', "'").replace('“', '"').replace('”', '"')
+    const [pName, ...pDesc] = firstLine.split('.');
+    const description = pDesc.join('.').trim();
+
+    const answers = await this.promptContext('RollTable', {name: pName});
+    const id = this.genID(answers.name, answers.prefix);
+    const context = await this.validateTarget({id, type: 'RollTable', target: answers.target});
 
     const formula = lines.shift();
     const resultLabel = lines.shift().replace(/\<[^\>]*\>/g, '').trim();
@@ -65,11 +81,11 @@ export default class TableExtractor extends ExtractorBase {
 
     const results = rawPairs.map(([range, value]) => this._createEntry(range, value));
 
-    const data = {_id: id, name, results, formula};
+    const data = {_id: id, name: answers.name, results, formula, description};
 
-    await RollTable.create(data, {pack: answers.targetPack, keepId: true}).then(table => {
+    await KeepIdTable.createDialog(data, context).then(table => {
       table.sheet.render(true);
-      navigator.clipboard.writeText(`@Embed[${table.uuid} rollable classes="caption-top" resultLabel="${resultLabel}"]{${name}}`);
+      navigator.clipboard.writeText(`@Embed[${table.uuid} rollable classes="caption-top" resultLabel="${resultLabel}"]{${answers.name}}`);
     });
   }
 
