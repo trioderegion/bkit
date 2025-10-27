@@ -49,8 +49,13 @@
       clean: true,
       package: {
         create: true,
+        manifest: "%projectUrl%/releases/latest/download/module.json",
+        download: "%projectUrl%/releases/download/%version%/%package.name%.zip"
       }
     }
+  },
+  package: {
+    "name":"%config.id%-%config.version%",
   },
   "dependencies": {
     "core": [
