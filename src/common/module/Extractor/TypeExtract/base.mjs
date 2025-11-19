@@ -96,7 +96,7 @@ export default class ExtractorBase {
     const collectionField = CONFIG[type].documentClass.metadata.collection;
     if (!collectionField) return [];
     return Array.from(foundry.applications.instances.values())
-      .filter(app => app.document?.collections[collectionField])
+      .filter(app => app.document?.collections?.[collectionField])
       .map(app => app.document);
   }
 

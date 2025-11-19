@@ -120,7 +120,7 @@ export default class ItemExtractor extends ExtractorBase {
     });
 
     /* Creation Context */
-    const context = this.validateTarget({id: data._id, type: 'Item', target: answer.target});
+    const context = await this.validateTarget({id: data._id, type: 'Item', target: answer.target});
 
     const item = await KeepIdItem.createDialog(data, context);
     const embedText = `@Embed[${item.uuid} classes="caption-top item-card"]{${caption}}`;
