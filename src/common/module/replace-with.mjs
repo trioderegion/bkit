@@ -24,12 +24,15 @@ export default class ReplaceWith {
 
     await Promise.all(Object.entries(tDoc.constructor.metadata.embedded)
       .map(([name, collection]) => tDoc.deleteEmbeddedDocuments(name, [], {deleteAll: true})
-        .then(_ => tDoc.createEmbeddedDocuments(name, data[collection], {keepId: true, keepEmbeddedIds: true}))
+        .then(_ => {
+          data[collection].forEach( d => { if ('origin' in d) delete d.origin } );
+          tDoc.createEmbeddedDocuments(name, data[collection], {keepId: true, keepEmbeddedIds: true})
+        })
         .then(_ => delete data[collection])));
 
     if (onlyembedded) return ui.notifications.success('Embedded documents replaced.')
 
-    ['_stats', '_id', 'sort', 'folder'].forEach(key => delete data[key]);
+    ['_stats', '_id', 'sort', 'folder'].forEach(key => { if (key in data) delete data[key]});
 
     if ('system' in data) {
       data['==system'] = data.system;
