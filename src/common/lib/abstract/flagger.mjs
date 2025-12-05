@@ -17,6 +17,8 @@ export default class Flagger extends foundry.applications.api.ApplicationV2 {
     field: '',
   }
 
+  static FLAG_MODEL = foundry.abstract.DataModel;
+
   static hook() {
     Hooks.on('getHeaderControlsApplicationV2', (app, controls) => {
       controls.push({
@@ -40,11 +42,10 @@ export default class Flagger extends foundry.applications.api.ApplicationV2 {
     return this.options.document;
   }
 
-  constructor(flagModel, options) {
+  constructor(options) {
     super(options);
 
-    this.flagData = new flagModel();
-    this.flagData.updateFrom(this.document);
+    this.flagData = new this.constructor.FLAG_MODEL;
   }
 
   _initializeApplicationOptions(options) {
@@ -72,6 +73,7 @@ export default class Flagger extends foundry.applications.api.ApplicationV2 {
     const updateData = this._ingestSubmit(data.object);
     this.flagData.updateSource(updateData);
     await this.document.update({[this.flagData.constructor.flagPath]: this.flagData.toObject()});
+    this.document.render({force: true});
   }
 
   async _renderHTML(context, options) {

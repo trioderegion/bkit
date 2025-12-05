@@ -39,7 +39,5 @@ class JournalFlagger extends Flagger {
     return super.compatible(doc) && (doc.documentName == 'JournalEntry');
   }
 
-  constructor(options) {
-    super(JournalFlags, options);
-  }
+  static FLAG_MODEL = JournalFlags;
 }

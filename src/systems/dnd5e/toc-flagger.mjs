@@ -64,7 +64,7 @@ class NavData extends FlagData {
 }
 
 
-class ToCFlagger extends Flagger {
+class ToCEntryFlagger extends Flagger {
 
   static APP_CONTROLS = {
     icon: 'fa-table-columns',
@@ -76,32 +76,35 @@ class ToCFlagger extends Flagger {
     this.hook();
   }
 
-  static compatible(doc) {
-    return super.compatible(doc) && (doc?.documentName.includes('JournalEntry') ?? false);
-  }
+  static FLAG_MODEL = ToCEntryData;
 
-  constructor(options) {
-    const model = options.document?.documentName === 'JournalEntryPage' ? ToCPageData : ToCEntryData;
-    super(model, options);
+  static compatible(doc) {
+    return super.compatible(doc) && (doc?.documentName === 'JournalEntry');
   }
 }
 
-class NavFlagger extends Flagger {
+class ToCPageFlagger extends ToCEntryFlagger {
+  static FLAG_MODEL = ToCPageData;
+
+  static {
+    this.hook();
+  }
+
+  static compatible(doc) {
+    return Flagger.compatible(doc) && (doc?.documentName === 'JournalEntryPage');
+  }
+}
+
+class NavFlagger extends ToCEntryFlagger {
   static APP_CONTROLS = {
     icon: 'fa-compass',
     label: 'Nav Flags',
     field: 'Navigation',
   }
 
-  static compatible(doc) {
-    return super.compatible(doc) && (doc.documentName == 'JournalEntry')
-  }
+  static FLAG_MODEL = NavData;
 
   static {
     this.hook();
-  }
-
-  constructor(options) {
-    super(NavData, options);
   }
 }
