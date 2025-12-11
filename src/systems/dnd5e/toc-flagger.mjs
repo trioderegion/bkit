@@ -93,6 +93,11 @@ class ToCPageFlagger extends ToCEntryFlagger {
   static compatible(doc) {
     return Flagger.compatible(doc) && (doc?.documentName === 'JournalEntryPage');
   }
+
+  async submitHandler(evt, form, data) {
+    await super.submitHandler(evt, form, data);
+    await this.document.parent.render({force: true});
+  }
 }
 
 class NavFlagger extends ToCEntryFlagger {

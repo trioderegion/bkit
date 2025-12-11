@@ -83,13 +83,31 @@
     gap: 0;
   }
 
-  .changes .key {
-    margin-block-start: 0.5em;
-    grid-column: 1 / -1;
+  .changes header {
+    grid-template-columns: max-content auto 6ch 3ch;
+
+    .key {
+      margin-block-start: 0.5em;
+      grid-column: 1 / 3;
+    }
+
+    .value {
+      margin-inline-start: 2rem;
+    }
+
+    .controls {
+      grid-column: 3/-1;
+      grid-row: 1;
+    }
   }
 
   .changes [data-changes] {
     grid-template-columns: max-content auto 6ch 3ch;
     gap: 0.2em;
+
+    .key {
+      margin-block-start: 0.5em;
+      grid-column: 1 / -1;
+    }
   }
 }
