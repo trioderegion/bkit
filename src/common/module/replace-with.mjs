@@ -1,4 +1,15 @@
 export default class ReplaceWith {
+  static {
+    Hooks.on('getHeaderControlsApplicationV2', (app, controls) => {
+      controls.push({
+        icon: 'fa-solid fa-clone',
+        label: 'Replace With...',
+        onClick: () => this.replaceWith(app.document),
+        visible: () => 'document' in app,
+      });
+    });
+  }
+
   static async replaceWith(target) {
     const fields = [
       new foundry.data.fields.DocumentUUIDField({label: 'From'}).toFormGroup({}, {name: 'source', }).outerHTML,
@@ -44,14 +55,5 @@ export default class ReplaceWith {
     return ui.notifications.success('Document replaced!')
   }
 
-  static {
-    Hooks.on('getHeaderControlsApplicationV2', (app, controls) => {
-      controls.push({
-        icon: 'fa-solid fa-clone',
-        label: 'Replace With...',
-        onClick: () => this.replaceWith(app.document),
-        visible: () => 'document' in app,
-      });
-    });
-  }
+
 }
