@@ -102,7 +102,7 @@ export default class ItemExtractor extends ExtractorBase {
     if (!answer) return;
 
     /* if a non <p> is the remaining first child, its likely an inline item */
-    if (!['H1', 'H2', 'H3', 'P'].includes(wrapper.firstChild.nodeName)) {
+    if (!['H1', 'H2', 'H3', 'H4', 'H5', 'P'].includes(wrapper.firstChild.nodeName)) {
       const parawrapper = document.createElement("p");
       parawrapper.replaceChildren(...wrapper.childNodes);
       wrapper.replaceChildren(parawrapper);
@@ -123,7 +123,7 @@ export default class ItemExtractor extends ExtractorBase {
     const context = await this.validateTarget({id: data._id, type: 'Item', target: answer.target});
 
     const item = await KeepIdItem.createDialog(data, context);
-    const embedText = `@Embed[${item.uuid} classes="caption-top item-card"]{${caption}}`;
+    const embedText = `@Embed[${item.uuid} classes="item-card"]`;
     navigator.clipboard.writeText(embedText);
     ui.notifications.info(`"${embedText}" written to clipboard.`);
     await game.user.setFlag('%id%', 'Item-extractor', {type: item.type, folder: item.folder?.id});

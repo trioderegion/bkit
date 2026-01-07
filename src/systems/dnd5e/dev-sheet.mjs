@@ -12,8 +12,9 @@ export default class DevSheet5e {
       default: false,
     });
 
-    Hooks.on("renderActivitySheet", (app, frame) => {
+    Hooks.on("renderActivitySheet", (app, frame, config, options) => {
       frame.classList.toggle('taboo', game.settings.get('%id%', 'taboo'));
+      if (options.isFirstRender) app.changeTab('activation', 'sheet');
     });
 
     Hooks.on("renderItemSheet5e", (app, /** @type HTMLElement */ frame) => {

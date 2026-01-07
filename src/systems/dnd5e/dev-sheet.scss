@@ -2,7 +2,6 @@
 	min-width: min-content;
 	& .window-content {
 
-    search {display: none;}
     max-height: 90vh;
 		display: grid;
     gap: 0.5em;
@@ -10,7 +9,9 @@
           "desc deet deet" fit-content(40vh)
           "adv  eff act" fit-content(15vh)
           ".  . tabs" auto
-          / 400px 400px 300px;
+          / 400px 300px 300px;
+
+    search {display: none;}
 
     [data-application-part="header"] {
       grid-area:header;
@@ -56,20 +57,39 @@
 }
 
 .taboo.activity {
-  min-width:fit-content;
+  min-width: fit-content;
   .window-content {
     display: grid;
-    grid-template-columns: repeat(3, 300px);
-    grid-template-rows: repeat(auto-fill, minmax(50px, auto));
-    grid-auto-flow:dense;
+    grid: "nav ." auto
+          "identity effect" auto
+          / 300px 300px;
 
-    .tab {
+    .tab .tab {
       overflow-y:auto;
       display:flex;
     }
 
-    .tabs {display: none;}
+    .tab .tabs {display: none;}
 
+    nav::after {display: none;}
+
+    > .tabs {
+      grid-area: nav;
+      margin-block-end: inherit;
+      [data-tab="effect"] {
+        display: none;
+      }
+    }
+
+    [data-tab="effect"] {
+      grid-area: effect;
+      display: flex;
+    }
+
+    [data-tab="activation"],
+    [data-tab="identity"] {
+      grid-area: identity;
+    }
   }
 }
 

@@ -20,7 +20,7 @@ export default class ReplaceWith {
       content: `<fieldset>${fields.join('')}</fieldset>`,
       window: {title: 'Clone Document Into', },
       ok: {
-        callback: (event, button) => new FormDataExtended(button.form).object
+        callback: (event, button) => new foundry.applications.ux.FormDataExtended(button.form).object
       },
       position: {top: 100},
       rejectClose: false,
