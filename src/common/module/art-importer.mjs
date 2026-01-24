@@ -30,7 +30,7 @@ class ArtImport {
 
     const {anchor, category, level} = await foundry.applications.api.DialogV2.prompt({
       content: div,
-      window: {title: 'Clone Document Into', },
+      window: {title: 'Configure Image Import', },
       ok: {
         callback: (event, button) => new foundry.applications.ux.FormDataExtended(button.form).object
       },

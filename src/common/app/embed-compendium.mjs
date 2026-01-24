@@ -21,6 +21,7 @@ class EmbedConfig extends foundry.abstract.DataModel {
 class EmbedCompendium extends foundry.applications.api.ApplicationV2 {
   static {
     Hooks.on('getCompendiumContextOptions', this.#addContextEntry);
+    Hooks.on('getFolderContextOptions', this.#addFolderContext); 
   }
 
   static DEFAULT_OPTIONS = {
@@ -33,6 +34,24 @@ class EmbedCompendium extends foundry.applications.api.ApplicationV2 {
       closeOnSubmit: true,
     },
     pack: null,
+  }
+
+  static #addFolderContext(directory, options) {
+    options.push({
+      name: 'Embed Contents',
+      icon: '<i class="fa-solid fa-anchor"></i>',
+      condition: header => {
+        const li = header.closest(".directory-item");
+        const folder = fromUuidSync(li.dataset.uuid);
+        return folder.type !== 'Adventure';
+      },
+      callback: async header => {
+        const li = header.closest(".directory-item");
+        const folder = await fromUuid(li.dataset.uuid);
+        const embedder = new EmbedCompendium({folder});
+        embedder.render({force: true});
+      }
+    });
   }
 
   static #addContextEntry(compDirectory, menuItems) {
@@ -53,6 +72,22 @@ class EmbedCompendium extends foundry.applications.api.ApplicationV2 {
     this.config = EmbedConfig.loadState();
   }
 
+  #folderDescendents(root) {
+    if (!root) return []; 
+    const index = root.contents;
+    const descendents = root.getSubfolders(false).flatMap(this.#folderDescendents.bind(this));
+    return index.concat(descendents);
+  }
+
+  async #getEntries() {
+    if (this.folder) {
+      return this.#folderDescendents(this.folder);
+    }
+
+    return (await this.pack.getIndex()).contents;
+  }
+
+  get folder() { return this.options.folder }
   get pack() { return this.options.pack }
 
   async _prepareContext(options) {
@@ -93,16 +128,52 @@ class EmbedCompendium extends foundry.applications.api.ApplicationV2 {
     content.replaceChildren(...element.children);
   }
 
+  async #promptCategory(journal) {
+    const categories = journal.categories.reduce( (acc, curr) => {
+      acc[curr._id] = curr.name;
+      return acc;
+    }, {});
+
+    const fields = [
+      new foundry.data.fields.StringField({label: 'Category', choices: categories}).toFormGroup({}, {name: 'category',}),
+    ]
+
+    const fieldset = document.createElement('fieldset');
+    fieldset.append(...fields)
+
+    const div = document.createElement('div');
+    div.appendChild(fieldset);
+
+    const {category} = await foundry.applications.api.DialogV2.prompt({
+      content: div,
+      window: {title: 'Select Journal Category', },
+      ok: {
+        callback: (event, button) => new foundry.applications.ux.FormDataExtended(button.form).object
+      },
+      position: {top: 100},
+      rejectClose: false,
+    });
+
+    return category;
+  }
+
   async _submitHandler(evt, form, data) {
     const journal = await fromUuid(data.object.target);
-    const isStatblock = this.config.config.includes('statblock');
+
+    /* if the journal has categories, allow a selection */
+    let category = null;
+    if (journal.categories.size > 0) {
+      category = await this.#promptCategory(journal);
+    }
+
     this.config.updateSource(data.object);
     await this.config.saveState();
+    const isStatblock = this.config.config.includes('statblock');
 
-    const index = (await this.pack.getIndex()).contents;
+    const index = await this.#getEntries();
     index.sort( (a, b) => a.name.localeCompare(b.name));
 
-    const pages = index.map( entry => ({type: 'text', name: entry.name, title: {level: this.config.level, show: this.config.show}, text: {content: `${isStatblock ? '<p>@Embed[' + entry.uuid + ' inline]{' + entry.name + '}</p>' : ''}<p>@Embed[${[entry.uuid, this.config.config, this.config.options].filter(e=>e).join(' ')}]</p>`}}));
+    const pages = index.map( entry => ({type: 'text', category, name: entry.name, title: {level: this.config.level, show: this.config.show}, text: {content: `${isStatblock ? '<p>@Embed[' + entry.uuid + ' inline]{' + entry.name + '}</p>' : ''}<p>@Embed[${[entry.uuid, this.config.config, this.config.options].filter(e=>e).join(' ')}]</p>`}}));
 
     await journal.createEmbeddedDocuments('JournalEntryPage', pages);
   }

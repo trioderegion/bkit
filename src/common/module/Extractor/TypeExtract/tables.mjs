@@ -85,7 +85,7 @@ export default class TableExtractor extends ExtractorBase {
 
     await KeepIdTable.createDialog(data, context).then(table => {
       table.sheet.render(true);
-      navigator.clipboard.writeText(`@Embed[${table.uuid} rollable classes="caption-top" resultLabel="${resultLabel}"]{${answers.name}}`);
+      navigator.clipboard.writeText(`@Embed[${table.uuid} rollable resultLabel="${resultLabel}"]{${answers.name}}`);
     });
   }
 
@@ -136,7 +136,6 @@ export default class TableExtractor extends ExtractorBase {
         entries.push([first.innerText.trim(), result.trim()]);
       } 
     }
-    console.debug(entries); 
     return entries.flat();
   }
 
