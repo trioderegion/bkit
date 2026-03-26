@@ -14,6 +14,18 @@ export default class PageSplitter extends ExtractorBase {
         }
       });
     });
+
+    Hooks.on('getJournalEntryPageContextOptions', (journal, options) => {
+      options.push({
+        name: 'Split on Headers',
+        icon: '<i class="fa-solid fa-code-branch"></i>',
+        callback: header => {
+          const li = header.closest(".page");
+          const us = journal.document.pages.get(li.dataset.pageId);
+          (new this().split({pageuuid: us.uuid, targetuuid: us.parent.uuid, level: 3, type: 'text'})).then( _ => us.delete() );
+        }
+      });
+    });
   }
 
   get documentName() {
