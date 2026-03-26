@@ -54,11 +54,6 @@ export default class PageSplitter extends ExtractorBase {
 
     function nextUntil(elem, selector, filter) {
 
-      // matches() polyfill
-      if (!Element.prototype.matches) {
-        Element.prototype.matches = Element.prototype.msMatchesSelector || Element.prototype.webkitMatchesSelector;
-      }
-
       // Setup siblings array
       const siblings = [];
 
@@ -91,6 +86,12 @@ export default class PageSplitter extends ExtractorBase {
 
     const div = document.createElement("div");
     div.innerHTML = page.text.content;
+
+    /* Insert faux header representing the page title/header */
+    const fauxLevel = page.title.level;
+    const fauxHeader = `<h${fauxLevel}>${page.name}</h${fauxLevel}>`;
+    div.insertAdjacentHTML('afterbegin', fauxHeader);
+
     const headings = div.querySelectorAll(elementToSplitOn);
     const pageData = [];
 

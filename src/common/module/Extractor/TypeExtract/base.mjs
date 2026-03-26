@@ -5,9 +5,10 @@ export default class ExtractorBase {
     return null;
   }
 
-  genID(name, prefix = '') {
-    const id = `${prefix}${name.slugify({lowercase: false, replacement: '', strict: true})}`;
-    if (id.length >= 16) return id.substring(0, 16);
+  genID(name, prefix = '', randomChars = 2) {
+    const staticLength = 16 - randomChars;
+    let id = `${prefix}${name.slugify({lowercase: false, replacement: '', strict: true})}`;
+    if (id.length > staticLength) id = id.substring(0, staticLength);
     return id.padEnd(16, foundry.utils.randomID());
   }
 
@@ -23,6 +24,10 @@ export default class ExtractorBase {
       case 'SHEET':
         context.parent = await fromUuid(targetParts.at(1));
         break;
+      default:
+        context.parent = await fromUuid(target);
+        break;
+
     }
 
     const uuid = foundry.utils.buildUuid({id, documentName: type, ...context});

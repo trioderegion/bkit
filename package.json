@@ -23,6 +23,7 @@
     "rollup-config-badger-den": "1.x"
   },
   "devDependencies": {
-    "@alenaksu/json-viewer": "^2.1.2"
+    "@alenaksu/json-viewer": "^2.1.2",
+    "baseline-browser-mapping": "^2.10.0"
   }
 }
