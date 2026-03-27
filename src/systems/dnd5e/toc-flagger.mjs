@@ -44,7 +44,7 @@ class ToCPageData extends FlagData {
   }
 }
 
-class NavData extends FlagData {
+export class NavData extends FlagData {
   static defineSchema() {
     const fields = foundry.data.fields;
     return {
