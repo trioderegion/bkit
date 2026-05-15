@@ -75,7 +75,7 @@ export default class DataView extends foundry.applications.api.ApplicationV2 {
   }
 
   async _renderHTML(context, options) {
-    const navHTML = await renderTemplate("templates/generic/tab-navigation.hbs", context);
+    const navHTML = await foundry.applications.handlebars.renderTemplate("templates/generic/tab-navigation.hbs", context);
 
     const views = Object.values(context.tabs).map( ({id, cssClass = '', functionName = null, path = ''}) => {
       const container = document.createElement('div');

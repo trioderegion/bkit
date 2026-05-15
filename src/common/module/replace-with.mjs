@@ -11,12 +11,21 @@ export default class ReplaceWith {
   }
 
   static async replaceWith(target) {
+
+    const defaultSource = target._stats?.compendiumSource ?? undefined;
+
     const fields = [
-      new foundry.data.fields.DocumentUUIDField({label: 'From'}).toFormGroup({}, {name: 'source', }).outerHTML,
-      new foundry.data.fields.BooleanField({label: 'Embedded Only?'}).toFormGroup({}, {name: 'onlyembedded', }).outerHTML,
+      new foundry.data.fields.DocumentUUIDField({label: 'From'}).toFormGroup({}, {name: 'source', value: defaultSource }).outerHTML,
+      new foundry.data.fields.BooleanField({label: 'Embedded Only'}).toFormGroup({}, {name: 'onlyembedded', }).outerHTML,
     ]
 
-    const {source, onlyembedded} = await foundry.applications.api.DialogV2.prompt({
+    if (!target.pack) {
+      fields.push(
+        new foundry.data.fields.BooleanField({label: 'Set as Source'}).toFormGroup({}, {name: 'setsource', }).outerHTML,
+      )
+    }
+
+    const {source, onlyembedded, setsource = false} = await foundry.applications.api.DialogV2.prompt({
       content: `<fieldset>${fields.join('')}</fieldset>`,
       window: {title: 'Clone Document Into', },
       ok: {
@@ -43,11 +52,20 @@ export default class ReplaceWith {
 
     if (onlyembedded) return ui.notifications.success('Embedded documents replaced.')
 
-    ['_stats', '_id', 'sort', 'folder'].forEach(key => { if (key in data) delete data[key]});
-
     if ('system' in data) {
       data['==system'] = data.system;
       delete data.system;
+    }
+    
+    delete data._id;
+    delete data.folder;
+    delete data.sort;
+    delete data._stats;
+    if (setsource) {
+      data._stats = {
+        compendiumSource: sDoc.pack ? sDoc.uuid : null,
+        duplicateSource: sDoc.pack ? null : sDoc.uuid,
+      }
     }
 
     await tDoc.update(data);
