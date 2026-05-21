@@ -9,6 +9,18 @@ const findReferences = (text) => {
   return uuids;
 }
 
+const findAssets = (text, scope) => {
+  //const regex = /(?:modules\/bts-book-spirits\/)(([^\"]*)(png|webp|jpg|jpeg))/gi;
+  const regex = new RegExp(`(?:modules\/${scope}\/)(([^\"]*)(png|webp|jpg|jpeg|svg))`, 'gi')
+  let result;
+  const assets = [];
+  while (result = regex.exec(text)) {
+    assets.push(result.at(1));
+  }
+
+  return assets;
+}
+
 const collectEntries = (folder, entries = []) => {
   entries.push(...folder.contents);
   folder.children.forEach(child => collectEntries(child.folder, entries));
@@ -46,10 +58,14 @@ class ReferenceTracer {
 
   static async trace(folder = null) {
     const defaults = game.user.getFlag('%id%', 'reference-tracer') ?? ReferenceTracer.DEFAULT_ANSWERS;
+
+    const scopes = game.getPackageScopes().map(pkg => ({value: pkg, label: pkg}));
+
     const fields = [
-      new foundry.data.fields.SetField(new foundry.data.fields.StringField(), {label: 'Ignore Packs:'}).toFormGroup({}, {name: 'ignore', value: defaults.ignore, options: game.getPackageScopes().map(pkg => ({value: pkg, label: pkg}))}).outerHTML,
+      new foundry.data.fields.SetField(new foundry.data.fields.StringField(), {label: 'Ignore Packs:'}).toFormGroup({}, {name: 'ignore', value: defaults.ignore, options: scopes}).outerHTML,
       new foundry.data.fields.StringField({label: 'First by:'}).toFormGroup({}, {placeholder: ReferenceTracer.DEFAULT_ANSWERS.first, name: 'first', value: defaults.first}).outerHTML,
       new foundry.data.fields.StringField({label: 'Then by:'}).toFormGroup({}, {placeholder: ReferenceTracer.DEFAULT_ANSWERS.second, name: 'second', value: defaults.second}).outerHTML,
+      new foundry.data.fields.StringField({label: 'Manifest For:'}).toFormGroup({}, {name: 'manifestfor', value: defaults.manifestfor, options:scopes}).outerHTML,
     ]
 
     const content = `<p>Provided scope: uuid, doc, page, journal, folder, parsed.</p><fieldset>${fields.join('')}</fieldset>`;
@@ -122,6 +138,12 @@ class ReferenceTracer {
           for (const item of ref.doc.items) {
             await addReference(item.uuid, ref.doc, ref.journal, ref.folder);
           }
+
+          if (ref.doc.type === 'encounter' || ref.doc.type === 'group') {
+            for (const member of ref.doc.system.members) {
+              await addReference(member.uuid, ref.doc, ref.journal, ref.folder);
+            }
+          }
           break;
         }
         case 'RollTable':
@@ -153,6 +175,8 @@ class ReferenceTracer {
       if (text) await Promise.all(findReferences(text).map(uuid => addReference(uuid, ref.doc, ref.journal, ref.folder)));
     }
 
+    /* Do not trace documents gathered _directly_ from their parent document (e.g. embedded items of referenced actors
+     * but keep references like an AE embedding an item description) */
     references = references.filter( ref => ref.doc?.parent?.uuid !== ref.page.uuid );
 
     const primaryGrouping = Object.groupBy(references, (r) => foundry.utils.getProperty(r, first));
@@ -196,40 +220,66 @@ class ReferenceTracer {
       }
     });
 
-    this.createManifest(references);
+    this.createManifest(references, answer.manifestfor);
+    this.traceAssets(references, answer.manifestfor);
   }
 
-  static createManifest(references = []) {
+  static createManifest(references = [], scope = 'dnd5e') {
     const nonWorld = references.filter(ref => (('metadata' in ref.parsed.collection) && ref.doc));
 
-    const dbKeys = nonWorld.map(ref => {
-      const collection = [ref.doc.collectionName];
-      const id = [ref.doc.id];
-
-      if (ref.doc.isEmbedded) {
-        collection.unshift(ref.doc.parent.collectionName);
-        id.unshift(ref.doc.parent.id);
-      }
-
-      return `!${collection.join('.')}!${id.join('.')}`;
-    });
-
-    //const deduped = Object.groupBy(references, ({parsed}) => parsed.collection.metadata?.name ?? 'WORLD');
-    
     const manifest = nonWorld.reduce( (acc, ref) => {
-      const pack = ref.parsed.collection.metadata.name;
-      acc[pack] ??= {};
-      
-      const primaryId = ref.parsed.primaryId ?? ref.parsed.id;
-      acc[pack][primaryId] ??= {};
-      if (ref.doc.isEmbedded) {
-        acc[pack][primaryId][ref.doc.collectionName] ??= [];
-        acc[pack][primaryId][ref.doc.collectionName].push(ref.doc.id);
+      if (scope == ref.parsed.collection.metadata.packageName) {
+        const pack = ref.parsed.collection.metadata.name;
+        acc[pack] ??= {};
+
+        const primaryId = ref.parsed.primaryId ?? ref.parsed.id;
+        acc[pack][primaryId] ??= {};
+        if (ref.doc.isEmbedded) {
+          acc[pack][primaryId][ref.doc.collectionName] ??= [];
+          acc[pack][primaryId][ref.doc.collectionName].push(ref.doc.id);
+        }
       }
 
       return acc;
     }, {} )
 
-    console.log(dbKeys, manifest);
+    console.log('Compendium Manifest', manifest);
+  }
+
+  static traceAssets(references = [], scope = 'dnd5e') {
+    const assets = new Set();
+    const ignore = new Set();
+    const deduped = new Set();
+
+    references.forEach( ref => {
+      const {enabled = false, subject = {texture: null}} = foundry.utils.getProperty(ref.doc, 'prototypeToken.ring') ?? foundry.utils.getProperty(ref.doc, 'ring') ?? {};
+      const text = JSON.stringify(ref.doc?.toObject() ?? '');
+      const found = findAssets(text, scope);
+      found.forEach(a => {
+        /* If this actor/token is configured with an implicit dynamic ring */
+        if (enabled && !subject.texture && a.includes('/tokens/')) {
+          ignore.add(a);
+          const subjectPath = a.replace('/tokens/', '/subjects/');
+          ignore.add(subjectPath);
+          a = a.replace("/tokens/", "/{tokens,subjects}/")
+        }
+
+        assets.add(a)
+      });
+    })
+
+    assets.forEach(a => {
+      if (ignore.has(a)) return;
+      if (a.includes('/thumbs/portraits/')) {
+        const portPath = a.replace('/thumbs/portraits/', '/portraits/');
+        deduped.delete(portPath);
+        ignore.add(portPath);
+        a = a.replace('/thumbs/portraits/', '/{thumbs/portraits,portraits}/')
+      }
+
+      deduped.add(a);
+    })
+
+    console.log('Used Assets', [...deduped].sort());
   }
 }

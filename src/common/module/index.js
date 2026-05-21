@@ -5,3 +5,4 @@ import './change-type.mjs';
 import './art-importer.mjs';
 import './token-gallery.mjs';
 import './page-merge.mjs';
+import './open-parent.mjs';
