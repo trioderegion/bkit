@@ -3,18 +3,6 @@ import ExtractorBase from './base.mjs';
 export default class PageSplitter extends ExtractorBase {
 
   static {
-    Hooks.on('%id%.extractorEntries', entries => {
-      entries.push({
-        title: 'Split Headers',
-        action: 'split-headers',
-        cmd: (state, dispatch, view) => {
-          const element = view.dom.closest('prose-mirror');
-          const pageuuid = element?.dataset?.documentUuid;
-          new this().split({pageuuid});
-        }
-      });
-    });
-
     Hooks.on('getJournalEntryPageContextOptions', (journal, options) => {
       options.push({
         name: 'Split on Headers',
@@ -22,7 +10,7 @@ export default class PageSplitter extends ExtractorBase {
         callback: header => {
           const li = header.closest(".page");
           const us = journal.document.pages.get(li.dataset.pageId);
-          (new this().split({pageuuid: us.uuid, targetuuid: us.parent.uuid, level: 3, type: 'text'})).then( _ => us.delete() );
+          (new this().split({pageuuid: us.uuid, targetuuid: us.parent.uuid, level: 3, type: 'text'}));
         }
       });
     });
@@ -47,7 +35,7 @@ export default class PageSplitter extends ExtractorBase {
       content,
       title: 'Split Page by Headers',
       ok: {
-        callback: (event, button) => new FormDataExtended(button.form).object
+        callback: (event, button) => new foundry.applications.ux.FormDataExtended(button.form).object
       },
       position: {top: 100},
       rejectClose: true
@@ -105,23 +93,33 @@ export default class PageSplitter extends ExtractorBase {
     div.insertAdjacentHTML('afterbegin', fauxHeader);
 
     const headings = div.querySelectorAll(elementToSplitOn);
-    const pageData = [];
 
-    for (const heading of headings) {
-      let siblings = nextUntil(heading, elementToSplitOn);
-      let pageHTML = "";
-      for (const sibling of siblings) {
-        pageHTML += sibling.outerHTML;
+    const pageData = Array.from(headings).map( (heading, index) => {
+
+      const _id = index == 0 ? page.id : this.genID(heading.innerText ?? 'split');
+      if (index != 0) this.validateTarget({id: _id, type: this.documentName, target: targetuuid}); 
+
+      const siblings = nextUntil(heading, elementToSplitOn);
+      const pageHTML = siblings.map( sib => sib.outerHTML ).join('');
+
+      if (index == 0) return {
+        text: {content: pageHTML},
       }
 
-      const name = heading.innerText ?? '(No Title)';
-      const _id = this.genID(name);
-      this.validateTarget({id: _id, type: this.documentName, target: targetuuid}); 
-      pageData.push({_id, type, name, "text.content": pageHTML, "title.level": heading.tagName.at(1)});
+      return {
+        _id,
+        type,
+        name: (heading.innerText ?? '[Split Page]'),
+        sort: (page.sort + 100 * index),
+        'text.content': pageHTML,
+        'title.level': (heading.tagName?.at(1) ?? 1),
+      }
 
-    }
+    });
 
-    await journal.createEmbeddedDocuments("JournalEntryPage", pageData, {keepId: true});
+    const [update, ...creation] = pageData;
+    await journal.createEmbeddedDocuments("JournalEntryPage", creation, {keepId: true});
+    await page.update(update);
   }
 }
 
