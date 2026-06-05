@@ -9,6 +9,10 @@ class StatblockData extends FlagData {
       hp: new fields.StringField({required: false, label: 'HP', nullable: true, blank: false}),
       pb: new fields.StringField({required: false, label: 'PB', nullable: true, blank: false}),
       cr: new fields.StringField({required: false, label: 'CR', nullable: true, blank: false}),
+      speed: new fields.StringField({required: false, label: 'Speed', nullable: true, blank: false}),
+      xp: new fields.StringField({required: false, label: 'XP', nullable: true, blank: false}),
+      languages: new fields.StringField({required: false, label: 'Languages', nullable: true, blank: false}),
+      initiative: new fields.StringField({required: false, label: 'Initiative', nullable: true, blank: false}),
     }
   }
 
