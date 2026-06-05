@@ -8,6 +8,9 @@ export default class Flagger extends foundry.applications.api.ApplicationV2 {
     },
     window: {
       contentClasses: ['standard-form']
+    },
+    actions: {
+      reset: this.#reset,
     }
   }
 
@@ -38,14 +41,39 @@ export default class Flagger extends foundry.applications.api.ApplicationV2 {
 
   flagData = null;
 
-  get document() {
-    return this.options.document;
+  static #reset(evt, data) {
+    this._reset().then(_ => this.close());
   }
 
   constructor(options) {
     super(options);
 
     this.flagData = new this.constructor.FLAG_MODEL;
+  }
+
+  _reset() {
+    const model = this.flagData.constructor;
+
+    /* Flag data is held directly on the package scope */
+    if (model.inner.length == 0) {
+      const keys = Object.keys(this.flagData.schema.fields);
+      return Promise.all(keys.map(key => 
+        this.document.unsetFlag(this.flagData.constructor.scope, key)
+      ));
+    }
+
+    /* flag data is a key within a package scope */
+    if (model.inner.length == 1) {
+      return this.document.unsetFlag(this.constructor.FLAG_MODEL.scope, this.constructor.FLAG_MODEL.inner.at(0));
+    }
+
+    if (model.inner.length > 1) {
+      return ui.notifications.error('Complex flag structure requires specific _reset implementation! No updates performed.');
+    }
+  }
+
+  get document() {
+    return this.options.document;
   }
 
   _initializeApplicationOptions(options) {
@@ -77,7 +105,7 @@ export default class Flagger extends foundry.applications.api.ApplicationV2 {
   }
 
   async _renderHTML(context, options) {
-    const buttons = await foundry.applications.handlebars.renderTemplate("templates/generic/form-footer.hbs", {buttons: [{type: 'submit', label: 'Submit'}]});
+    const buttons = await foundry.applications.handlebars.renderTemplate("templates/generic/form-footer.hbs", {buttons: [{type: 'submit', label: 'Submit'}, {type: 'button', label: 'Unset Flags', action: 'reset'}]});
 
     /* Render entry inputs */ 
     const fieldset = document.createElement('fieldset');

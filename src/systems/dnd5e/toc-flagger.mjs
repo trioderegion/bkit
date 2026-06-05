@@ -59,7 +59,7 @@ export class NavData extends FlagData {
   }
 
   static get inner() {
-    return '.navigation';
+    return ['navigation'];
   }
 }
 

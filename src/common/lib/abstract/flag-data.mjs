@@ -4,11 +4,11 @@ export default class FlagData extends foundry.abstract.DataModel {
   }
 
   static get inner() {
-    return '';
+    return [];
   }
 
   static get flagPath() {
-    return `flags.${this.scope}${this.inner}`;
+    return ['flags', this.scope, ...this.inner].join('.');
   }
 
   read(doc) {
