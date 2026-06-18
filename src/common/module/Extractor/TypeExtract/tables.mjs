@@ -92,7 +92,7 @@ export default class TableExtractor extends ExtractorBase {
   _createEntry(range, value) {
     const parsedRange = this.parseRange(range);
     return {
-      type: 0,
+      type: CONST.TABLE_RESULT_TYPES.TEXT,
       text: value,
       range: parsedRange,
     };
