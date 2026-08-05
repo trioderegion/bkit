@@ -20,7 +20,7 @@ export default class PageSplitter extends ExtractorBase {
     return 'JournalEntryPage';
   }
 
-  async split({pageuuid = null, targetuuid = null, level = null, type = 'text'}) {
+  async split({pageuuid = null, targetuuid = null, level = null, type = 'text', removeSource = true}) {
     const fields = [
       new foundry.data.fields.StringField({label: 'Page to Split'}).toFormGroup({}, {name: 'pageuuid', value: pageuuid}).outerHTML,
       new foundry.data.fields.DocumentUUIDField({label: 'Target Journal'}).toFormGroup({}, {name: 'targetuuid', value: targetuuid}).outerHTML,
@@ -119,7 +119,7 @@ export default class PageSplitter extends ExtractorBase {
 
     const [update, ...creation] = pageData;
     await journal.createEmbeddedDocuments("JournalEntryPage", creation, {keepId: true});
-    await page.update(update);
+    if (removeSource) await page.update(update);
   }
 }
 

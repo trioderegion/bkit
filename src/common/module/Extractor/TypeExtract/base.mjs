@@ -91,6 +91,25 @@ export default class ExtractorBase {
     return result;
   }
 
+  nameFromChildren(childNodes) {
+    while (childNodes.length > 0) {
+      const node = childNodes[0];
+      let nodeText = "";
+
+      if (node.hasChildNodes()) {
+        nodeText = this.nameFromChildren(node.childNodes);
+        if (!node.hasChildNodes()) node.remove();
+      } else {
+        /* trim name of whitespace and remove any trailing punctuation */
+        nodeText = node.textContent.trim().replace(/[^\w\d\)]\.*$/, "");
+        node.remove();
+      }
+
+      if (nodeText.length > 0) {
+        return nodeText.replace('’', "'");
+      }
+    }
+  }
 
   unlockedPacks(type = this.documentName) {
     const packs = game.packs.filter(p => !p.locked && p.metadata.type === type).map(p => p.metadata);

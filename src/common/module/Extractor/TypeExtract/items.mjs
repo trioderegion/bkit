@@ -26,26 +26,6 @@ export default class ItemExtractor extends ExtractorBase {
     return 'Item';
   }
 
-  nameFromChildren(childNodes) {
-    while (childNodes.length > 0) {
-      const node = childNodes[0];
-      let nodeText = "";
-
-      if (node.hasChildNodes()) {
-        nodeText = this.nameFromChildren(node.childNodes);
-        if (!node.hasChildNodes()) node.remove();
-      } else {
-        /* trim name of whitespace and remove any trailing punctuation */
-        nodeText = node.textContent.trim().replace(/[^\w\d\)]\.*$/, "");
-        node.remove();
-      }
-
-      if (nodeText.length > 0) {
-        return nodeText;
-      }
-    }
-  }
-
   async extract() {
     const {range: fullRange = null} = this.getSelection();
     const fragment = fullRange.cloneContents();
@@ -55,8 +35,6 @@ export default class ItemExtractor extends ExtractorBase {
 
     /* try to figure out where the name of the document lives */
     let name = this.nameFromChildren(wrapper.childNodes);
-    const caption = name;
-    name = name.replace('’', "'");
     const priceRegex = /\s*\((?<value>\d*,?\d+) (?<denomination>[PGESC]P)\)/
     const result = priceRegex.exec(name);
 
@@ -98,7 +76,7 @@ export default class ItemExtractor extends ExtractorBase {
       return;
     }
 
-    const answer = await this.promptContext('Item', {name});
+    const answer = await this.promptContext(this.documentName, {name});
     if (!answer) return;
 
     /* if a non <p> is the remaining first child, its likely an inline item */
@@ -120,13 +98,13 @@ export default class ItemExtractor extends ExtractorBase {
     });
 
     /* Creation Context */
-    const context = await this.validateTarget({id: data._id, type: 'Item', target: answer.target});
+    const context = await this.validateTarget({id: data._id, type: this.documentName, target: answer.target});
 
     const item = await KeepIdItem.createDialog(data, context);
     const embedText = `@Embed[${item.uuid} classes="item-card"]`;
     navigator.clipboard.writeText(embedText);
     ui.notifications.info(`"${embedText}" written to clipboard.`);
-    await game.user.setFlag('%id%', 'Item-extractor', {type: item.type, folder: item.folder?.id});
+    await game.user.setFlag('%id%', this.documentName + '-extractor', {type: item.type, folder: item.folder?.id});
   }
 }
 
