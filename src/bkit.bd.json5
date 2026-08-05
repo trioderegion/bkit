@@ -59,8 +59,8 @@
   },
   "dependencies": {
     "core": [
-      "13",
-      "13"
+      "14",
+      "14"
     ]
   },
   "storage": false,
